@@ -2,7 +2,7 @@ import datetime
 
 from django.utils import timezone
 from .map_api_client import get_route_data
-from ..models import Stop
+from ..models import DailyLog, Stop
 
 def calculate_trip_stops(trip):
     route_info = get_route_data(trip.current_location, trip.dropoff_location)
@@ -26,4 +26,16 @@ def calculate_trip_stops(trip):
         location=trip.pickup_location,
         start_time=start_dt,
         end_time=start_dt + datetime.timedelta(hours=1)
+    )
+
+    # 2) Driving from pickup to drop-off with fueling and HOS breaks
+    miles_covered = 0
+    hours_driven_today = 0
+    on_duty_hours_today = 0
+    day_start = start_dt
+    current_dt = pickup_stop.end_time
+    daily_log_date = current_dt.date()
+    daily_log = DailyLog.objects.create(
+        trip=trip,
+        date=daily_log_date
     )
