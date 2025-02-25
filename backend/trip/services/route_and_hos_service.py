@@ -9,3 +9,7 @@ def calculate_trip_stops(trip):
     trip.total_distance = distance_miles
     trip.estimated_duration = duration_hours
     trip.save()
+
+    # Clear existing stops/logs for recalculation
+    trip.stops.all().delete()
+    trip.logs.all().delete()
