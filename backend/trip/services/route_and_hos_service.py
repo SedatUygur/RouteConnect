@@ -126,3 +126,8 @@ def calculate_trip_stops(trip):
     )
     on_duty_hours_today += 1
     current_dt += datetime.timedelta(hours=1)
+
+    # finalize daily log
+    daily_log.total_driving = hours_driven_today
+    daily_log.total_on_duty = on_duty_hours_today
+    daily_log.save()
