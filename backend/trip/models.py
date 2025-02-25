@@ -39,6 +39,8 @@ class DailyLog(models.Model):
     total_on_duty = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     total_off_duty = models.DecimalField(max_digits=4, decimal_places=2, default=0)
     total_sleeper_berth = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    # Optionally store JSON events for the day
+    events = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"DailyLog {self.id} for {self.date}"
