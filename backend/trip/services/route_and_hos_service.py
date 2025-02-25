@@ -76,3 +76,13 @@ def calculate_trip_stops(trip):
         # Also consider 70-hr/8-day limit. I skip advanced rolling calculations for brevity.
         # For fueling every 1000 miles, let's see how many miles remain to the next fueling stop:
         next_fuel_miles = 1000 - (miles_covered % 1000)
+
+        if next_fuel_miles > miles_remaining:
+            next_fuel_miles = miles_remaining
+
+        # Determine how many miles we can drive in `drive_time_left` hours
+        possible_miles = drive_time_left * drive_speed
+        actual_miles_to_drive = min(possible_miles, next_fuel_miles)
+
+        # Time to drive those miles
+        drive_time = actual_miles_to_drive / drive_speed
