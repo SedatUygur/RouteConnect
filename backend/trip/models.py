@@ -28,3 +28,17 @@ class Stop(models.Model):
 
     def __str__(self):
         return f"{self.stop_type} stop at {self.location}"
+    
+class DailyLog(models.Model):
+    """
+    Stores summary of each day of driving for the trip (to fill out daily logs).
+    """
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='logs')
+    date = models.DateField()
+    total_driving = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    total_on_duty = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    total_off_duty = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    total_sleeper_berth = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"DailyLog {self.id} for {self.date}"
