@@ -115,3 +115,14 @@ def calculate_trip_stops(trip):
             )
             on_duty_hours_today += 0.25
             current_dt += datetime.timedelta(minutes=15)
+    
+    # 3) Add drop-off stop
+    dropoff_stop = Stop.objects.create(
+        trip=trip,
+        stop_type="Dropoff",
+        location=trip.dropoff_location,
+        start_time=current_dt,
+        end_time=current_dt + datetime.timedelta(hours=1)
+    )
+    on_duty_hours_today += 1
+    current_dt += datetime.timedelta(hours=1)
