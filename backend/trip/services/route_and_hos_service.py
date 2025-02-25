@@ -59,3 +59,10 @@ def calculate_trip_stops(trip):
             day_start = current_dt
             hours_driven_today = 0
             on_duty_hours_today = 0
+
+            # new day log
+            daily_log_date = current_dt.date()
+            daily_log = DailyLog.objects.create(
+                trip=trip,
+                date=daily_log_date
+            )
