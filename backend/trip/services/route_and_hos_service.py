@@ -35,7 +35,14 @@ def calculate_trip_stops(trip):
     day_start = start_dt
     current_dt = pickup_stop.end_time
     daily_log_date = current_dt.date()
+
     daily_log = DailyLog.objects.create(
         trip=trip,
         date=daily_log_date
     )
+
+    # The simplified approach: break the entire distance into daily chunks of up to 11 hours driving
+    # Also consider fueling stops every 1000 miles
+    miles_remaining = distance_miles
+    drive_speed = 55.0  # mph average speed, for example
+    daily_cycle_used = float(trip.current_cycle_hours_used)
