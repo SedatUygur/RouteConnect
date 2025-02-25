@@ -4,8 +4,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Adjust for real geocoding of start_address / end_address, or parse them from the user.
 def get_route_data(start_address, end_address):
+    """
+    Geocode the addresses, then request directions.
+    Return { 'distance': miles, 'duration': hours, 'geometry': <list of coords> }
+    """
+    # 1) Geocode start_address and end_address to lat/lng (simplify here or do it properly)
+    # For demonstration, let's assume we already have lat/lng or we call an endpoint to get them.
 
+    # 2) Call directions API with start and end coordinates
     # We need an API key from openrouteservice.org
     ORS_API_KEY = os.getenv("ORS_API_KEY", default="")
     ORS_API_DRIVING_CAR_URL = os.getenv("ORS_API_DRIVING_CAR_URL", default="")
