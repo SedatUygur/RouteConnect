@@ -95,3 +95,10 @@ def calculate_trip_stops(trip):
             on_duty_hours_today += 0.5
             current_dt = break_dt + datetime.timedelta(minutes=30)
             hours_driven_today = 8
+        
+        # Continue driving
+        miles_covered += actual_miles_to_drive
+        miles_remaining -= actual_miles_to_drive
+        hours_driven_today += drive_time
+        on_duty_hours_today += drive_time
+        current_dt += datetime.timedelta(hours=drive_time)
