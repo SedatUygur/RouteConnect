@@ -86,3 +86,12 @@ def calculate_trip_stops(trip):
 
         # Time to drive those miles
         drive_time = actual_miles_to_drive / drive_speed
+
+        # If 8 hours of driving is reached, insert a 30-min break (once per day).
+        if hours_driven_today < 8 and hours_driven_today + drive_time > 8:
+            # Insert a break at the 8-hour mark
+            break_dt = current_dt + datetime.timedelta(hours=(8 - hours_driven_today))
+            # On-duty not driving or off duty for 30 min. I'll mark it as on-duty for simplicity
+            on_duty_hours_today += 0.5
+            current_dt = break_dt + datetime.timedelta(minutes=30)
+            hours_driven_today = 8
