@@ -102,3 +102,16 @@ def calculate_trip_stops(trip):
         hours_driven_today += drive_time
         on_duty_hours_today += drive_time
         current_dt += datetime.timedelta(hours=drive_time)
+
+        # If we hit a fueling stop (1000 mile intervals) or we are done
+        if miles_remaining > 0 and miles_covered % 1000 < 1 and miles_remaining > 0:
+            # Insert fueling stop
+            fueling_stop = Stop.objects.create(
+                trip=trip,
+                stop_type="Fuel",
+                location=f"Fuel station near mile {miles_covered}",
+                start_time=current_dt,
+                end_time=current_dt + datetime.timedelta(minutes=15)
+            )
+            on_duty_hours_today += 0.25
+            current_dt += datetime.timedelta(minutes=15)
