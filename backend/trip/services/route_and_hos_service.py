@@ -66,3 +66,13 @@ def calculate_trip_stops(trip):
                 trip=trip,
                 date=daily_log_date
             )
+
+            # also accumulate into 70-hour cycle
+            daily_cycle_used += (daily_log.total_on_duty or 0)
+
+        # Calculate how many miles we can drive before hitting 11-hr daily driving limit
+        drive_time_left = 11 - hours_driven_today
+
+        # Also consider 70-hr/8-day limit. I skip advanced rolling calculations for brevity.
+        # For fueling every 1000 miles, let's see how many miles remain to the next fueling stop:
+        next_fuel_miles = 1000 - (miles_covered % 1000)
