@@ -46,3 +46,16 @@ def calculate_trip_stops(trip):
     miles_remaining = distance_miles
     drive_speed = 55.0  # mph average speed, for example
     daily_cycle_used = float(trip.current_cycle_hours_used)
+
+    while miles_remaining > 0:
+        # Check if we need a new day
+        if hours_driven_today >= 11 or on_duty_hours_today >= 14:
+            # End day with 10 hours off
+            daily_log.total_driving = hours_driven_today
+            daily_log.total_on_duty = on_duty_hours_today
+            daily_log.save()
+
+            current_dt += datetime.timedelta(hours=10)  # 10 hr off duty
+            day_start = current_dt
+            hours_driven_today = 0
+            on_duty_hours_today = 0
