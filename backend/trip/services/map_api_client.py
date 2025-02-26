@@ -4,6 +4,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def geocode_address(address):
+    OSM_NOMINATIM_URL = os.getenv("OSM_NOMINATIM_URL", default="")
+
+    params = {
+        'q': address,
+        'format': 'json',
+        'limit': 1
+    }
+    response = requests.get(OSM_NOMINATIM_URL, params=params)
+    data = response.json()
+
 # Adjust for real geocoding of start_address / end_address, or parse them from the user.
 def get_route_data(start_address, end_address):
     """
