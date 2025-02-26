@@ -52,18 +52,19 @@ def calculate_trip_stops(trip):
     )
     current_dt = pickup_end  # Update time after pickup
 
-    # 2) Driving from pickup to drop-off with fueling and HOS breaks
-    miles_covered = 0
-    hours_driven_today = 0
-    on_duty_hours_today = 0
-    day_start = current_dt
-    current_dt = pickup_stop.end_time
-    daily_log_date = current_dt.date()
-
-    daily_log = DailyLog.objects.create(
-        trip=trip,
-        date=daily_log_date
-    )
+    # Initialize daily driving parameters for the first day
+    current_day = current_dt.date()
+    daily_driving_hours = 0.0  # Actual driving time today
+    daily_on_duty_hours = 1.0   # Already on duty for pickup
+    
+    miles_driven = 0.0
+    next_fuel_mile = 1000.0  # Fueling is scheduled every 1000 miles
+    
+    drive_speed = 55.0  # Average speed (mph)
+    has_taken_30min_break = False  # To ensure one break after 8 hours driving per day
+    
+    # Total miles remaining to drive
+    miles_remaining = total_distance
 
     # The simplified approach: break the entire distance into daily chunks of up to 11 hours driving
     # Also consider fueling stops every 1000 miles
