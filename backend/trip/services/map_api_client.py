@@ -12,8 +12,16 @@ def geocode_address(address):
         'format': 'json',
         'limit': 1
     }
+
     response = requests.get(OSM_NOMINATIM_URL, params=params)
     data = response.json()
+
+    if data:
+        lon = float(data[0]['lon'])
+        lat = float(data[0]['lat'])
+        return [lon, lat]
+    else:
+        raise Exception(f"Geocoding failed for address: {address}")
 
 # Adjust for real geocoding of start_address / end_address, or parse them from the user.
 def get_route_data(start_address, end_address):
