@@ -25,14 +25,17 @@ def geocode_address(address):
 
 def get_route_data(start_address, end_address):
     """
-    Geocode the addresses, then request directions.
-    Return { 'distance': miles, 'duration': hours, 'geometry': <list of coords> }
+    Geocode the start and end addresses, then call OpenRouteService
+    to retrieve the route.
+    
+    Returns a dictionary with:
+      - distance: total distance in miles,
+      - duration: driving time in hours (excluding scheduled breaks),
+      - geometry: list of [lon, lat] coordinates along the route.
     """
-    # 1) Geocode start_address and end_address to lat/lng
-    # For demonstration, we call an endpoint to get them.
     start_coords = geocode_address(start_address)
     end_coords = geocode_address(end_address)
-    # 2) Call directions API with start and end coordinates
+
     # We need an API key from openrouteservice.org
     ORS_API_KEY = os.getenv("ORS_API_KEY", default="")
     ORS_API_DIRECTIONS_URL = os.getenv("ORS_API_DIRECTIONS_URL", default="")
@@ -45,6 +48,7 @@ def get_route_data(start_address, end_address):
         'Authorization': ORS_API_KEY,
         'Content-Type': 'application/json'
     }
+    # Call directions API with start coordinates and end coordinates
     body = {
         "coordinates": [
             start_coords,
