@@ -25,22 +25,24 @@ def calculate_trip_stops(trip):
     # Clear existing stops/logs for recalculation
     trip.stops.all().delete()
     trip.logs.all().delete()
-    start_dt = timezone.now()
+
+    # Set start time (current time in driver's local time zone)
+    current_dt = timezone.now().astimezone(local_tz)
 
     # 1) Add pickup stop
     pickup_stop = Stop.objects.create(
         trip=trip,
         stop_type="Pickup",
         location=trip.pickup_location,
-        start_time=start_dt,
-        end_time=start_dt + datetime.timedelta(hours=1)
+        start_time=current_dt,
+        end_time=current_dt + datetime.timedelta(hours=1)
     )
 
     # 2) Driving from pickup to drop-off with fueling and HOS breaks
     miles_covered = 0
     hours_driven_today = 0
     on_duty_hours_today = 0
-    day_start = start_dt
+    day_start = current_dt
     current_dt = pickup_stop.end_time
     daily_log_date = current_dt.date()
 
