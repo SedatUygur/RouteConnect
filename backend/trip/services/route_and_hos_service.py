@@ -39,16 +39,18 @@ def calculate_trip_stops(trip):
         cutoff = day_date - datetime.timedelta(days=7)
         daily_on_duty_history = [(d, h) for (d, h) in daily_on_duty_history if d >= cutoff]
         rolling_cycle_hours = sum(h for (d, h) in daily_on_duty_history)
-    
 
-    # 1) Add pickup stop
+    # 2) Add pickup stop
+    pickup_start = current_dt
+    pickup_end = pickup_start + datetime.timedelta(hours=1)
     pickup_stop = Stop.objects.create(
         trip=trip,
         stop_type="Pickup",
         location=trip.pickup_location,
-        start_time=current_dt,
-        end_time=current_dt + datetime.timedelta(hours=1)
+        start_time=pickup_start,
+        end_time=pickup_end
     )
+    current_dt = pickup_end  # Update time after pickup
 
     # 2) Driving from pickup to drop-off with fueling and HOS breaks
     miles_covered = 0
