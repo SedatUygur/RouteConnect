@@ -184,7 +184,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         # Determine how many miles can be driven in the effective driving time
         potential_miles = effective_driving_time * drive_speed
         
-        # Adjust if the next fuel stop comes sooner than potential miles
+        # Check if next fuel stop is nearer.
         if miles_driven + potential_miles >= next_fuel_mile:
             miles_to_drive = next_fuel_mile - miles_driven
             drive_time = miles_to_drive / drive_speed
@@ -196,7 +196,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
 
         # If the segment would cross the 8-hour driving mark, insert a 30-minute break.
         if daily_driving_hours < 8 and daily_driving_hours + drive_time > 8 and not has_taken_30min_break:
-            time_until_break = 8 - daily_driving_hours
+            time_until_break = 8.0 - daily_driving_hours
             drive_time_before_break = time_until_break
             miles_before_break = drive_time_before_break * drive_speed
             
@@ -206,7 +206,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
             miles_driven += miles_before_break
             miles_remaining -= miles_before_break
 
-            # Insert a 30-minute break
+            # Insert the 30-minute break
             break_start = current_dt
             break_end = current_dt + datetime.timedelta(minutes=30)
             Stop.objects.create(
@@ -219,7 +219,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
             current_dt = break_end
             daily_on_duty_hours += 0.5
             has_taken_30min_break = True
-            continue  # Recalculate available time after break
+            continue  # Recalculate available time after the break
         
         # Drive for the computed drive_time
         daily_driving_hours += drive_time
@@ -244,7 +244,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
             daily_on_duty_hours += fuel_stop_duration
             next_fuel_mile += 1000  # Set up next fuel stop
     
-    # 4. After driving completes, add Dropoff Stop (1 hour)
+    # 8. After all driving is complete, insert the Dropoff Stop (1 hour).
     dropoff_start = current_dt
     dropoff_end = current_dt + datetime.timedelta(hours=1)
     Stop.objects.create(
@@ -256,6 +256,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     )
     daily_on_duty_hours += 1
     current_dt = dropoff_end
+    add_on_duty_period(daily_on_duty_start, current_dt)
 
     # Record the final day's log (if the trip ends mid-day, off-duty period isn’t needed)
     DailyLog.objects.create(
