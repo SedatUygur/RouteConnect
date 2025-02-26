@@ -97,6 +97,8 @@ def calculate_trip_stops(trip, driver_timezone=None):
         end_time=pickup_end
     )
 
+    # Record this on-duty period (pickup counts as on duty)
+    add_on_duty_period(pickup_start, pickup_end)
     current_dt = pickup_end  # Update time after pickup
 
     # Initialize daily driving parameters for the first day
