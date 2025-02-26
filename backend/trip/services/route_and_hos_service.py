@@ -6,7 +6,7 @@ from timezonefinder import TimezoneFinder
 from .map_api_client import get_route_data
 from ..models import DailyLog, Stop
 
-def calculate_trip_stops(trip):
+def calculate_trip_stops(trip, driver_timezone=None):
     """
     Calculate stops along the trip route using full HOS logic per the Interstate Truck Driver’s Guide.
     
@@ -29,8 +29,8 @@ def calculate_trip_stops(trip):
     """
     # Assume driver's local time zone
     # It could be provided per user in production
-    local_tz = pytz.timezone("America/New_York")
-    tf = TimezoneFinder(local_tz)
+    # local_tz = pytz.timezone("America/New_York")
+    tf = TimezoneFinder()
 
     # 1. Retrieve route info via real geocoding
     route_info = get_route_data(trip.current_location, trip.dropoff_location)
@@ -54,12 +54,19 @@ def calculate_trip_stops(trip):
     except Exception:
         pass  # Fallback if not available
 
+    start_tz_str = tf.timezone_at(lng=start_coords[0], lat=start_coords[1]) if start_coords else "America/New_York"
+    dest_tz_str = tf.timezone_at(lng=dest_coords[0], lat=dest_coords[1]) if dest_coords else "America/New_York"
+
+    # Use the provided driver_timezone if given; otherwise, default to the start location's timezone.
+    effective_tz_str = driver_timezone if driver_timezone else start_tz_str
+    effective_tz = pytz.timezone(effective_tz_str)
+
+    # 2. Set the starting time (driver’s local time)
+    current_dt = timezone.now().astimezone(effective_tz)
+
     # Clear existing stops/logs for recalculation
     trip.stops.all().delete()
     trip.logs.all().delete()
-
-    # Set start time (current time in driver's local time zone)
-    current_dt = timezone.now().astimezone(local_tz)
 
     # Initialize rolling cycle parameters
     rolling_cycle_hours = float(trip.current_cycle_hours_used)
