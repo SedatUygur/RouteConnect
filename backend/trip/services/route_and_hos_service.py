@@ -115,15 +115,13 @@ def calculate_trip_stops(trip, driver_timezone=None):
     # Total miles remaining to drive
     miles_remaining = total_distance
 
-    # 3. Process driving segments (simulate multi-day trip if needed)
+    # 7. Process the driving segments with granular calculations.
     while miles_remaining > 0:
-        # Calculate available driving time based on daily limits:
-        # Maximum allowed is 11 hours driving, and total on-duty must remain within a 14-hour window.
-        allowed_driving = 11.0 - daily_driving_hours
-        allowed_on_duty = 14.0 - daily_on_duty_hours
-        effective_driving_time = min(allowed_driving, allowed_on_duty)
+        # Compute current rolling on-duty hours over last 8 days.
+        rolling_on_duty = compute_rolling_on_duty(current_dt)
 
-        if effective_driving_time <= 0:
+        # Check if a full restart is needed (if rolling on-duty reaches 70 hours).
+        if rolling_on_duty + daily_on_duty_hours >= 70:
             # End the current day if limits are reached.
             # Check rolling 70-hour cycle: if the accumulated on-duty hours reach 70, require a 34-hour restart.
             off_duty_duration = 34.0
@@ -145,6 +143,10 @@ def calculate_trip_stops(trip, driver_timezone=None):
             daily_on_duty_hours = 0.0
             has_taken_30min_break = False
             continue
+
+        allowed_driving = 11.0 - daily_driving_hours
+        allowed_on_duty = 14.0 - daily_on_duty_hours
+        effective_driving_time = min(allowed_driving, allowed_on_duty)
 
         # Determine how many miles can be driven in the effective driving time
         potential_miles = effective_driving_time * drive_speed
