@@ -172,6 +172,14 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
                 total_off_duty=off_duty_duration,
                 total_sleeper_berth=sleeper_duration if use_sleeper_berth else 0
             )
+            # Advance time by the off-duty period.
+            current_dt += datetime.timedelta(hours=off_duty_duration)
+            current_day = current_dt.date()
+            daily_driving_hours = 0.0
+            daily_on_duty_hours = 0.0
+            daily_on_duty_start = current_dt
+            has_taken_30min_break = False
+            continue
 
         # Determine how many miles can be driven in the effective driving time
         potential_miles = effective_driving_time * drive_speed
