@@ -173,3 +173,14 @@ def calculate_trip_stops(trip):
     )
     daily_on_duty_hours += 1
     current_dt = dropoff_end
+
+    # Record the final day's log (if the trip ends mid-day, off-duty period isn’t needed)
+    DailyLog.objects.create(
+        trip=trip,
+        date=current_day,
+        total_driving=daily_driving_hours,
+        total_on_duty=daily_on_duty_hours,
+        total_off_duty=0,
+        total_sleeper_berth=0
+    )
+    update_rolling_cycle(daily_on_duty_hours, current_day)
