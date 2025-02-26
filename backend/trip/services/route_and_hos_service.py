@@ -163,6 +163,15 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
             
             # End the current on-duty period.
             add_on_duty_period(daily_on_duty_start, current_dt)
+            # Record the day's log.
+            DailyLog.objects.create(
+                trip=trip,
+                date=current_day,
+                total_driving=daily_driving_hours,
+                total_on_duty=daily_on_duty_hours,
+                total_off_duty=off_duty_duration,
+                total_sleeper_berth=sleeper_duration if use_sleeper_berth else 0
+            )
 
         # Determine how many miles can be driven in the effective driving time
         potential_miles = effective_driving_time * drive_speed
