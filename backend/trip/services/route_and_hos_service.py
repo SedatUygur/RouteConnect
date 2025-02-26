@@ -98,22 +98,18 @@ def calculate_trip_stops(trip):
             has_taken_30min_break = False
             continue
 
-        # Calculate how many miles we can drive before hitting 11-hr daily driving limit
-        drive_time_left = 11 - hours_driven_today
-
-        # Also consider 70-hr/8-day limit. I skip advanced rolling calculations for brevity.
-        # For fueling every 1000 miles, let's see how many miles remain to the next fueling stop:
-        next_fuel_miles = 1000 - (miles_covered % 1000)
-
-        if next_fuel_miles > miles_remaining:
-            next_fuel_miles = miles_remaining
-
-        # Determine how many miles we can drive in `drive_time_left` hours
-        possible_miles = drive_time_left * drive_speed
-        actual_miles_to_drive = min(possible_miles, next_fuel_miles)
-
-        # Time to drive those miles
-        drive_time = actual_miles_to_drive / drive_speed
+        # Determine how many miles can be driven in the effective driving time
+        potential_miles = effective_driving_time * drive_speed
+        
+        # Adjust if the next fuel stop comes sooner than potential miles
+        if miles_driven + potential_miles >= next_fuel_mile:
+            miles_to_drive = next_fuel_mile - miles_driven
+            drive_time = miles_to_drive / drive_speed
+            reached_fuel_stop = True
+        else:
+            miles_to_drive = min(potential_miles, miles_remaining)
+            drive_time = miles_to_drive / drive_speed
+            reached_fuel_stop = (miles_driven + miles_to_drive) >= next_fuel_mile
 
         # If 8 hours of driving is reached, insert a 30-min break (once per day).
         if hours_driven_today < 8 and hours_driven_today + drive_time > 8:
@@ -125,8 +121,8 @@ def calculate_trip_stops(trip):
             hours_driven_today = 8
         
         # Continue driving
-        miles_covered += actual_miles_to_drive
-        miles_remaining -= actual_miles_to_drive
+        miles_covered += miles_to_drive
+        miles_remaining -= miles_to_drive
         hours_driven_today += drive_time
         on_duty_hours_today += drive_time
         current_dt += datetime.timedelta(hours=drive_time)
