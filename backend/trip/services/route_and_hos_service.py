@@ -82,31 +82,21 @@ def calculate_trip_stops(trip, driver_timezone=None):
 
         return total
 
-    # Clear existing stops/logs for recalculation
+    # 4. Clear previous stops and logs for recalculation.
     trip.stops.all().delete()
     trip.logs.all().delete()
 
-    # Initialize rolling cycle parameters
-    rolling_cycle_hours = float(trip.current_cycle_hours_used)
-    daily_on_duty_history = []  # List of tuples: (date, on_duty_hours) for the last 8 days
-
-    def update_rolling_cycle(new_on_duty, day_date):
-        nonlocal daily_on_duty_history, rolling_cycle_hours # local to nonlocal
-        daily_on_duty_history.append((day_date, new_on_duty))
-        cutoff = day_date - datetime.timedelta(days=7)
-        daily_on_duty_history = [(d, h) for (d, h) in daily_on_duty_history if d >= cutoff]
-        rolling_cycle_hours = sum(h for (d, h) in daily_on_duty_history)
-
-    # 2) Add pickup stop
+    # 5. Insert the Pickup Stop (1 hour)
     pickup_start = current_dt
     pickup_end = pickup_start + datetime.timedelta(hours=1)
-    pickup_stop = Stop.objects.create(
+    Stop.objects.create(
         trip=trip,
         stop_type="Pickup",
         location=trip.pickup_location,
         start_time=pickup_start,
         end_time=pickup_end
     )
+
     current_dt = pickup_end  # Update time after pickup
 
     # Initialize daily driving parameters for the first day
@@ -134,7 +124,7 @@ def calculate_trip_stops(trip, driver_timezone=None):
         if effective_driving_time <= 0:
             # End the current day if limits are reached.
             # Check rolling 70-hour cycle: if the accumulated on-duty hours reach 70, require a 34-hour restart.
-            off_duty_duration = 34 if (rolling_cycle_hours + daily_on_duty_hours) >= 70 else 10
+            off_duty_duration = 34.0
             
             # Record the day's log
             DailyLog.objects.create(
@@ -145,7 +135,6 @@ def calculate_trip_stops(trip, driver_timezone=None):
                 total_off_duty=off_duty_duration,
                 total_sleeper_berth=off_duty_duration
             )
-            update_rolling_cycle(daily_on_duty_hours, current_day)
 
             # Advance time by the mandatory off-duty period
             current_dt += datetime.timedelta(hours=off_duty_duration)
@@ -240,4 +229,3 @@ def calculate_trip_stops(trip, driver_timezone=None):
         total_off_duty=0,
         total_sleeper_berth=0
     )
-    update_rolling_cycle(daily_on_duty_hours, current_day)
