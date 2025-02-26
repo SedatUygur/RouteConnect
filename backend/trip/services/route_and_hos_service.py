@@ -122,10 +122,10 @@ def calculate_trip_stops(trip, driver_timezone=None):
 
         # Check if a full restart is needed (if rolling on-duty reaches 70 hours).
         if rolling_on_duty + daily_on_duty_hours >= 70:
-            # End the current day if limits are reached.
-            # Check rolling 70-hour cycle: if the accumulated on-duty hours reach 70, require a 34-hour restart.
-            off_duty_duration = 34.0
-            
+            # Full 34-hour restart is required.
+            off_duty_duration = 34.0            
+            # End the current on-duty period.
+            add_on_duty_period(daily_on_duty_start, current_dt)
             # Record the day's log
             DailyLog.objects.create(
                 trip=trip,
