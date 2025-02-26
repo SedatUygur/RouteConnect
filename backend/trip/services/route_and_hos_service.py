@@ -145,18 +145,21 @@ def calculate_trip_stops(trip):
         miles_driven += miles_to_drive
         miles_remaining -= miles_to_drive
 
-        # If we hit a fueling stop (1000 mile intervals) or we are done
+        # If a fuel stop is reached, add a fueling stop (15 minutes)
         if reached_fuel_stop and miles_remaining > 0:
-            # Insert fueling stop
-            fueling_stop = Stop.objects.create(
+            fuel_stop_start = current_dt
+            fuel_stop_duration = 0.25  # 15 minutes
+            fuel_stop_end = current_dt + datetime.timedelta(hours=fuel_stop_duration)
+            Stop.objects.create(
                 trip=trip,
                 stop_type="Fuel",
                 location=f"Fuel Station near mile {int(miles_driven)}",
-                start_time=current_dt,
-                end_time=current_dt + datetime.timedelta(minutes=15)
+                start_time=fuel_stop_start,
+                end_time=fuel_stop_end
             )
-            on_duty_hours_today += 0.25
-            current_dt += datetime.timedelta(minutes=15)
+            current_dt = fuel_stop_end
+            daily_on_duty_hours += fuel_stop_duration
+            next_fuel_mile += 1000  # Set up next fuel stop
     
     # 3) Add drop-off stop
     dropoff_stop = Stop.objects.create(
