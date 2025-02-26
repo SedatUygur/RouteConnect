@@ -258,7 +258,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     current_dt = dropoff_end
     add_on_duty_period(daily_on_duty_start, current_dt)
 
-    # Record the final day's log (if the trip ends mid-day, off-duty period isn’t needed)
+    # 9. Record the final day's log.
     DailyLog.objects.create(
         trip=trip,
         date=current_day,
@@ -267,3 +267,8 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         total_off_duty=0,
         total_sleeper_berth=0
     )
+
+    # 10. If the destination is in a different time zone, adjust the final dropoff time.
+    dest_tz = pytz.timezone(dest_tz_str)
+    final_dropoff_local = current_dt.astimezone(dest_tz)
+    # I could store this adjusted dropoff time as part of the trip details.
