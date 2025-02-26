@@ -6,7 +6,7 @@ from timezonefinder import TimezoneFinder
 from .map_api_client import get_route_data
 from ..models import DailyLog, Stop
 
-def calculate_trip_stops(trip, driver_timezone=None):
+def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     """
     Calculate stops along the trip route using full HOS logic per the Interstate Truck Driver’s Guide.
     
@@ -150,6 +150,16 @@ def calculate_trip_stops(trip, driver_timezone=None):
         allowed_driving = 11.0 - daily_driving_hours
         allowed_on_duty = 14.0 - daily_on_duty_hours
         effective_driving_time = min(allowed_driving, allowed_on_duty)
+
+        if effective_driving_time <= 0:
+            # Daily limit reached: end the day with an off-duty (or sleeper combination) reset.
+            # If using sleeper berth logic, allow a 7+3 combination; else use a 10-hour off-duty block.
+            if use_sleeper_berth:
+                sleeper_duration = 7.0  # 7 consecutive hours in the sleeper berth
+                additional_off = 3.0    # plus 3 additional hours (can be off duty or sleeper)
+                off_duty_duration = sleeper_duration + additional_off
+            else:
+                off_duty_duration = 10.0
 
         # Determine how many miles can be driven in the effective driving time
         potential_miles = effective_driving_time * drive_speed
