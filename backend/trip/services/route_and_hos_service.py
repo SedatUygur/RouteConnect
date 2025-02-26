@@ -6,6 +6,26 @@ from .map_api_client import get_route_data
 from ..models import DailyLog, Stop
 
 def calculate_trip_stops(trip):
+    """
+    Calculate stops along the trip route using full HOS logic per the Interstate Truck Driver’s Guide.
+    
+    This function:
+      • Geocodes the current_location and dropoff_location to get a realistic route.
+      • Applies the following assumptions:
+          - Property-carrying driver using a 70-hour/8-day cycle.
+          - Allowed 11 hours of driving within a 14-hour on-duty window.
+          - A 30-minute break is required after 8 cumulative hours of driving.
+          - Pickup and drop-off each require 1 hour.
+          - Fuel stops occur at least every 1000 miles.
+      • Handles a rolling 70-hour/8-day calculation by keeping track of daily on-duty hours.
+      • Respects time zones (here we assume the driver’s local time zone is America/New_York).
+      • Splits the trip into consecutive days when the daily limits are met.
+
+    # Further refinements could include:
+    # - More detailed sleeper berth logic (e.g. allowing a combination of 7+3 hours off duty),
+    # - More granular rolling calculations (using actual timestamps for each on-duty period),
+    # - Handling crossing time zones in more detail.
+    """
     # Assume driver's local time zone
     # It could be provided per user in production
     local_tz = pytz.timezone("America/New_York")
