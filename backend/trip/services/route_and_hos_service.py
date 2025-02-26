@@ -33,6 +33,14 @@ def calculate_trip_stops(trip):
     rolling_cycle_hours = float(trip.current_cycle_hours_used)
     daily_on_duty_history = []  # List of tuples: (date, on_duty_hours) for the last 8 days
 
+    def update_rolling_cycle(new_on_duty, day_date):
+        nonlocal daily_on_duty_history, rolling_cycle_hours # local to nonlocal
+        daily_on_duty_history.append((day_date, new_on_duty))
+        cutoff = day_date - datetime.timedelta(days=7)
+        daily_on_duty_history = [(d, h) for (d, h) in daily_on_duty_history if d >= cutoff]
+        rolling_cycle_hours = sum(h for (d, h) in daily_on_duty_history)
+    
+
     # 1) Add pickup stop
     pickup_stop = Stop.objects.create(
         trip=trip,
