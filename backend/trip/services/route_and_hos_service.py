@@ -67,6 +67,16 @@ def calculate_trip_stops(trip, driver_timezone=None):
     
     def add_on_duty_period(start, end):
         on_duty_periods.append((start, end))
+    
+    def compute_rolling_on_duty(current_time):
+        cutoff = current_time - datetime.timedelta(days=8)
+        total = 0.0
+
+        for period_start, period_end in on_duty_periods:
+            if period_start >= cutoff:
+                total += (period_end - period_start).total_seconds() / 3600.0
+
+        return total
 
     # Clear existing stops/logs for recalculation
     trip.stops.all().delete()
