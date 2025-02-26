@@ -7,14 +7,18 @@ export default function Home() {
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [cycleHours, setCycleHours] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true); // Loading state starts
     try {
       
     } catch (err) {
       console.error(err);
       alert("Error creating trip.");
+    } finally {
+      setIsLoading(false); // Loading state ends
     }
   };
 
@@ -38,7 +42,7 @@ export default function Home() {
           <label>Current Cycle Hours Used:</label>
           <input type="number" step="0.1" value={cycleHours} onChange={(e) => setCycleHours(e.target.value)} placeholder="e.g., 12.5" required />
         </div>
-        <button type="submit">Create Trip</button>
+        <button type="submit" disabled={isLoading}>{isLoading ? "Loading..." : "Create Trip"}</button>
       </form>
     </div>
   );
