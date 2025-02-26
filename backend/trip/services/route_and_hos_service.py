@@ -35,14 +35,24 @@ def calculate_trip_stops(trip):
     # 1. Retrieve route info via real geocoding
     route_info = get_route_data(trip.current_location, trip.dropoff_location)
     total_distance = route_info['distance']  # miles
-    total_route_duration = route_info['duration']  # pure driving hours (without breaks)
+    pure_driving_duration = route_info['duration']  # pure driving hours (without breaks)
     route_geometry = route_info['geometry']
     
 
     # Store in the Trip model
     trip.total_distance = total_distance
-    trip.estimated_duration = total_route_duration
+    trip.estimated_duration = pure_driving_duration
     trip.save()
+
+    # Determine time zones at the start and destination
+    start_coords = None
+    dest_coords = None
+    try:
+        # get geocoded coordinates from the map client if available
+        start_coords = get_route_data(trip.current_location, trip.current_location)['geometry'][0]
+        dest_coords = get_route_data(trip.dropoff_location, trip.dropoff_location)['geometry'][0]
+    except Exception:
+        pass  # Fallback if not available
 
     # Clear existing stops/logs for recalculation
     trip.stops.all().delete()
