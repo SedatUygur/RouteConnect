@@ -66,12 +66,6 @@ def calculate_trip_stops(trip):
     # Total miles remaining to drive
     miles_remaining = total_distance
 
-    # The simplified approach: break the entire distance into daily chunks of up to 11 hours driving
-    # Also consider fueling stops every 1000 miles
-    miles_remaining = total_distance
-    drive_speed = 55.0  # mph average speed, for example
-    daily_cycle_used = float(trip.current_cycle_hours_used)
-
     while miles_remaining > 0:
         # Check if we need a new day
         if hours_driven_today >= 11 or on_duty_hours_today >= 14:
