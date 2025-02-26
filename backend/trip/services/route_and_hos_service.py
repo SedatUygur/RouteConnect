@@ -8,24 +8,28 @@ from ..models import DailyLog, Stop
 
 def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     """
-    Calculate stops along the trip route using full HOS logic per the Interstate Truck Driver’s Guide.
+    Calculates the stops and daily log entries for a trip using detailed HOS logic based on the
+    Interstate Truck Driver’s Guide. This implementation includes:
     
-    This function:
-      • Geocodes the current_location and dropoff_location to get a realistic route.
-      • Applies the following assumptions:
-          - Property-carrying driver using a 70-hour/8-day cycle.
-          - Allowed 11 hours of driving within a 14-hour on-duty window.
-          - A 30-minute break is required after 8 cumulative hours of driving.
-          - Pickup and drop-off each require 1 hour.
-          - Fuel stops occur at least every 1000 miles.
-      • Handles a rolling 70-hour/8-day calculation by keeping track of daily on-duty hours.
-      • Respects time zones (here we assume the driver’s local time zone is America/New_York).
-      • Splits the trip into consecutive days when the daily limits are met.
-
-    # Further refinements could include:
-    # - More detailed sleeper berth logic (e.g. allowing a combination of 7+3 hours off duty),
-    # - More granular rolling calculations (using actual timestamps for each on-duty period),
-    # - Handling crossing time zones in more detail.
+    - Real geocoding of start and destination addresses.
+    - Determination of time zones via timezonefinder. The driver's effective timezone is either
+      provided (driver_timezone) or determined from the start address.
+    - A rolling 70-hour/8-day calculation using actual on-duty period timestamps.
+    - Daily limits: maximum 11 hours of driving within a 14-hour on-duty window.
+    - A 30-minute break after 8 cumulative driving hours.
+    - A sleeper berth option: if enabled, an off-duty reset can be achieved with a 7+3 hour
+      combination (7 consecutive hours in a sleeper plus 3 additional hours off duty) instead of a fixed 10-hour block.
+    - Pickup and drop-off each require 1 hour.
+    - Fuel stops are inserted every 1000 miles.
+    - If the rolling total on-duty hours (across actual timestamps) reaches 70 hours in the preceding 8 days,
+      a full 34-hour restart is enforced.
+    - When crossing time zones, the final dropoff time is converted to the destination's local time.
+    
+    Parameters:
+      trip: Trip model instance (with current_location, pickup_location, dropoff_location, etc.)
+      driver_timezone (optional): a string time zone (e.g., "America/Chicago") provided by the user.
+      use_sleeper_berth (bool): if True, use the sleeper berth option (7+3 off duty) for resets;
+          otherwise use a fixed 10-hour off-duty period.
     """
 
     tf = TimezoneFinder()
