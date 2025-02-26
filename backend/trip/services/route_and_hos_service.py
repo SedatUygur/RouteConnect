@@ -123,7 +123,7 @@ def calculate_trip_stops(trip, driver_timezone=None):
         # Check if a full restart is needed (if rolling on-duty reaches 70 hours).
         if rolling_on_duty + daily_on_duty_hours >= 70:
             # Full 34-hour restart is required.
-            off_duty_duration = 34.0            
+            off_duty_duration = 34.0
             # End the current on-duty period.
             add_on_duty_period(daily_on_duty_start, current_dt)
             # Record the day's log
@@ -133,7 +133,7 @@ def calculate_trip_stops(trip, driver_timezone=None):
                 total_driving=daily_driving_hours,
                 total_on_duty=daily_on_duty_hours,
                 total_off_duty=off_duty_duration,
-                total_sleeper_berth=off_duty_duration
+                total_sleeper_berth=off_duty_duration # if not using sleeper, this remains off duty duration
             )
 
             # Advance time by the mandatory off-duty period
@@ -141,9 +141,12 @@ def calculate_trip_stops(trip, driver_timezone=None):
             current_day = current_dt.date()
             daily_driving_hours = 0.0
             daily_on_duty_hours = 0.0
+            daily_on_duty_start = current_dt
             has_taken_30min_break = False
             continue
 
+        # Determine available time based on daily limits:
+        # Maximum 11 hours driving and total on-duty not exceeding 14 hours.
         allowed_driving = 11.0 - daily_driving_hours
         allowed_on_duty = 14.0 - daily_on_duty_hours
         effective_driving_time = min(allowed_driving, allowed_on_duty)
