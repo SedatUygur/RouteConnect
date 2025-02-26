@@ -2,6 +2,7 @@ import datetime
 import pytz
 
 from django.utils import timezone
+from timezonefinder import TimezoneFinder
 from .map_api_client import get_route_data
 from ..models import DailyLog, Stop
 
@@ -29,6 +30,7 @@ def calculate_trip_stops(trip):
     # Assume driver's local time zone
     # It could be provided per user in production
     local_tz = pytz.timezone("America/New_York")
+    tf = TimezoneFinder(local_tz)
 
     # 1. Retrieve route info via real geocoding
     route_info = get_route_data(trip.current_location, trip.dropoff_location)
