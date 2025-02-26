@@ -122,6 +122,21 @@ def calculate_trip_stops(trip):
             current_dt += datetime.timedelta(hours=drive_time_before_break)
             miles_driven += miles_before_break
             miles_remaining -= miles_before_break
+
+            # Insert a 30-minute break
+            break_start = current_dt
+            break_end = current_dt + datetime.timedelta(minutes=30)
+            Stop.objects.create(
+                trip=trip,
+                stop_type="Break",
+                location="Rest Area",
+                start_time=break_start,
+                end_time=break_end
+            )
+            current_dt = break_end
+            daily_on_duty_hours += 0.5
+            has_taken_30min_break = True
+            continue  # Recalculate available time after break
         
         # Continue driving
         miles_covered += miles_to_drive
