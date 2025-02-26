@@ -29,6 +29,10 @@ def calculate_trip_stops(trip):
     # Set start time (current time in driver's local time zone)
     current_dt = timezone.now().astimezone(local_tz)
 
+    # Initialize rolling cycle parameters
+    rolling_cycle_hours = float(trip.current_cycle_hours_used)
+    daily_on_duty_history = []  # List of tuples: (date, on_duty_hours) for the last 8 days
+
     # 1) Add pickup stop
     pickup_stop = Stop.objects.create(
         trip=trip,
