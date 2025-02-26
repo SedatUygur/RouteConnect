@@ -10,13 +10,16 @@ def calculate_trip_stops(trip):
     # It could be provided per user in production
     local_tz = pytz.timezone("America/New_York")
 
+    # 1. Retrieve route info via real geocoding
     route_info = get_route_data(trip.current_location, trip.dropoff_location)
-    distance_miles = route_info['distance']   # total miles
-    duration_hours = route_info['duration']   # total hours (approx)
+    total_distance = route_info['distance']  # miles
+    total_route_duration = route_info['duration']  # pure driving hours (without breaks)
+    route_geometry = route_info['geometry']
+    
 
     # Store in the Trip model
-    trip.total_distance = distance_miles
-    trip.estimated_duration = duration_hours
+    trip.total_distance = total_distance
+    trip.estimated_duration = total_route_duration
     trip.save()
 
     # Clear existing stops/logs for recalculation
@@ -48,7 +51,7 @@ def calculate_trip_stops(trip):
 
     # The simplified approach: break the entire distance into daily chunks of up to 11 hours driving
     # Also consider fueling stops every 1000 miles
-    miles_remaining = distance_miles
+    miles_remaining = total_distance
     drive_speed = 55.0  # mph average speed, for example
     daily_cycle_used = float(trip.current_cycle_hours_used)
 
