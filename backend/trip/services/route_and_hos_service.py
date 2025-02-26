@@ -161,13 +161,15 @@ def calculate_trip_stops(trip):
             daily_on_duty_hours += fuel_stop_duration
             next_fuel_mile += 1000  # Set up next fuel stop
     
-    # 3) Add drop-off stop
-    dropoff_stop = Stop.objects.create(
+    # 4. After driving completes, add Dropoff Stop (1 hour)
+    dropoff_start = current_dt
+    dropoff_end = current_dt + datetime.timedelta(hours=1)
+    Stop.objects.create(
         trip=trip,
         stop_type="Dropoff",
         location=trip.dropoff_location,
-        start_time=current_dt,
-        end_time=current_dt + datetime.timedelta(hours=1)
+        start_time=dropoff_start,
+        end_time=dropoff_end
     )
-    on_duty_hours_today += 1
-    current_dt += datetime.timedelta(hours=1)
+    daily_on_duty_hours += 1
+    current_dt = dropoff_end
