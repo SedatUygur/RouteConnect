@@ -74,26 +74,21 @@ def calculate_trip_stops(trip):
         allowed_on_duty = 14.0 - daily_on_duty_hours
         effective_driving_time = min(allowed_driving, allowed_on_duty)
 
-        if hours_driven_today >= 11 or on_duty_hours_today >= 14:
-            # End day with 10 hours off
-            daily_log.total_driving = hours_driven_today
-            daily_log.total_on_duty = on_duty_hours_today
-            daily_log.save()
-
-            current_dt += datetime.timedelta(hours=10)  # 10 hr off duty
-            day_start = current_dt
-            hours_driven_today = 0
-            on_duty_hours_today = 0
-
-            # new day log
-            daily_log_date = current_dt.date()
-            daily_log = DailyLog.objects.create(
+        if effective_driving_time <= 0:
+            # End the current day if limits are reached.
+            # Check rolling 70-hour cycle: if the accumulated on-duty hours reach 70, require a 34-hour restart.
+            off_duty_duration = 34 if (rolling_cycle_hours + daily_on_duty_hours) >= 70 else 10
+            
+            # Record the day's log
+            DailyLog.objects.create(
                 trip=trip,
-                date=daily_log_date
+                date=current_day,
+                total_driving=daily_driving_hours,
+                total_on_duty=daily_on_duty_hours,
+                total_off_duty=off_duty_duration,
+                total_sleeper_berth=off_duty_duration
             )
-
-            # also accumulate into 70-hour cycle
-            daily_cycle_used += (daily_log.total_on_duty or 0)
+            update_rolling_cycle(daily_on_duty_hours, current_day)
 
         # Calculate how many miles we can drive before hitting 11-hr daily driving limit
         drive_time_left = 11 - hours_driven_today
@@ -151,8 +146,3 @@ def calculate_trip_stops(trip):
     )
     on_duty_hours_today += 1
     current_dt += datetime.timedelta(hours=1)
-
-    # finalize daily log
-    daily_log.total_driving = hours_driven_today
-    daily_log.total_on_duty = on_duty_hours_today
-    daily_log.save()
