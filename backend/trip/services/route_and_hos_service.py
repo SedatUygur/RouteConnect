@@ -66,8 +66,14 @@ def calculate_trip_stops(trip):
     # Total miles remaining to drive
     miles_remaining = total_distance
 
+    # 3. Process driving segments (simulate multi-day trip if needed)
     while miles_remaining > 0:
-        # Check if we need a new day
+        # Calculate available driving time based on daily limits:
+        # Maximum allowed is 11 hours driving, and total on-duty must remain within a 14-hour window.
+        allowed_driving = 11.0 - daily_driving_hours
+        allowed_on_duty = 14.0 - daily_on_duty_hours
+        effective_driving_time = min(allowed_driving, allowed_on_duty)
+
         if hours_driven_today >= 11 or on_duty_hours_today >= 14:
             # End day with 10 hours off
             daily_log.total_driving = hours_driven_today
