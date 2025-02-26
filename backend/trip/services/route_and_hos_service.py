@@ -90,6 +90,14 @@ def calculate_trip_stops(trip):
             )
             update_rolling_cycle(daily_on_duty_hours, current_day)
 
+            # Advance time by the mandatory off-duty period
+            current_dt += datetime.timedelta(hours=off_duty_duration)
+            current_day = current_dt.date()
+            daily_driving_hours = 0.0
+            daily_on_duty_hours = 0.0
+            has_taken_30min_break = False
+            continue
+
         # Calculate how many miles we can drive before hitting 11-hr daily driving limit
         drive_time_left = 11 - hours_driven_today
 
