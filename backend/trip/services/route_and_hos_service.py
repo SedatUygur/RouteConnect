@@ -27,9 +27,7 @@ def calculate_trip_stops(trip, driver_timezone=None):
     # - More granular rolling calculations (using actual timestamps for each on-duty period),
     # - Handling crossing time zones in more detail.
     """
-    # Assume driver's local time zone
-    # It could be provided per user in production
-    # local_tz = pytz.timezone("America/New_York")
+
     tf = TimezoneFinder()
 
     # 1. Retrieve route info via real geocoding
@@ -63,6 +61,12 @@ def calculate_trip_stops(trip, driver_timezone=None):
 
     # 2. Set the starting time (driver’s local time)
     current_dt = timezone.now().astimezone(effective_tz)
+
+    # 3. Initialize rolling on-duty period storage as a list of (start, end) tuples.
+    on_duty_periods = []  # Each tuple: (start_dt, end_dt)
+    
+    def add_on_duty_period(start, end):
+        on_duty_periods.append((start, end))
 
     # Clear existing stops/logs for recalculation
     trip.stops.all().delete()
