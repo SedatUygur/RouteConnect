@@ -69,6 +69,10 @@ def calculate_trip_stops(trip, driver_timezone=None):
         on_duty_periods.append((start, end))
     
     def compute_rolling_on_duty(current_time):
+        """
+        Sums the durations (in hours) of on-duty periods that started within the last 8 days
+        relative to current_time.
+        """
         cutoff = current_time - datetime.timedelta(days=8)
         total = 0.0
 
