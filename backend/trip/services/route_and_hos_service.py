@@ -101,16 +101,16 @@ def calculate_trip_stops(trip, driver_timezone=None):
     add_on_duty_period(pickup_start, pickup_end)
     current_dt = pickup_end  # Update time after pickup
 
-    # Initialize daily driving parameters for the first day
+    # 6. Set up daily parameters
     current_day = current_dt.date()
-    daily_driving_hours = 0.0  # Actual driving time today
-    daily_on_duty_hours = 1.0   # Already on duty for pickup
+    daily_driving_hours = 0.0  # driving hours accumulated today
+    daily_on_duty_start = current_dt  # start time of the current on-duty block for this day
+    daily_on_duty_hours = 1.0  # already 1 hour for pickup
     
     miles_driven = 0.0
-    next_fuel_mile = 1000.0  # Fueling is scheduled every 1000 miles
-    
-    drive_speed = 55.0  # Average speed (mph)
-    has_taken_30min_break = False  # To ensure one break after 8 hours driving per day
+    next_fuel_mile = 1000.0  # Fueling is required every 1000 miles
+    drive_speed = 55.0  # Assume an average speed (mph)
+    has_taken_30min_break = False
     
     # Total miles remaining to drive
     miles_remaining = total_distance
