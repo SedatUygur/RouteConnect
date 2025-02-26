@@ -111,14 +111,17 @@ def calculate_trip_stops(trip):
             drive_time = miles_to_drive / drive_speed
             reached_fuel_stop = (miles_driven + miles_to_drive) >= next_fuel_mile
 
-        # If 8 hours of driving is reached, insert a 30-min break (once per day).
-        if hours_driven_today < 8 and hours_driven_today + drive_time > 8:
-            # Insert a break at the 8-hour mark
-            break_dt = current_dt + datetime.timedelta(hours=(8 - hours_driven_today))
-            # On-duty not driving or off duty for 30 min. I'll mark it as on-duty for simplicity
-            on_duty_hours_today += 0.5
-            current_dt = break_dt + datetime.timedelta(minutes=30)
-            hours_driven_today = 8
+        # If the segment would cross the 8-hour driving mark, insert a 30-minute break.
+        if daily_driving_hours < 8 and daily_driving_hours + drive_time > 8 and not has_taken_30min_break:
+            time_until_break = 8 - daily_driving_hours
+            drive_time_before_break = time_until_break
+            miles_before_break = drive_time_before_break * drive_speed
+            
+            daily_driving_hours += drive_time_before_break
+            daily_on_duty_hours += drive_time_before_break
+            current_dt += datetime.timedelta(hours=drive_time_before_break)
+            miles_driven += miles_before_break
+            miles_remaining -= miles_before_break
         
         # Continue driving
         miles_covered += miles_to_drive
