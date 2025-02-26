@@ -23,23 +23,23 @@ def geocode_address(address):
     else:
         raise Exception(f"Geocoding failed for address: {address}")
 
-# Adjust for real geocoding of start_address / end_address, or parse them from the user.
 def get_route_data(start_address, end_address):
     """
     Geocode the addresses, then request directions.
     Return { 'distance': miles, 'duration': hours, 'geometry': <list of coords> }
     """
-    # 1) Geocode start_address and end_address to lat/lng (simplify here or do it properly)
-    # For demonstration, let's assume we already have lat/lng or we call an endpoint to get them.
-
+    # 1) Geocode start_address and end_address to lat/lng
+    # For demonstration, we call an endpoint to get them.
+    start_coords = geocode_address(start_address)
+    end_coords = geocode_address(end_address)
     # 2) Call directions API with start and end coordinates
     # We need an API key from openrouteservice.org
     ORS_API_KEY = os.getenv("ORS_API_KEY", default="")
-    ORS_API_DRIVING_CAR_URL = os.getenv("ORS_API_DRIVING_CAR_URL", default="")
+    ORS_API_DIRECTIONS_URL = os.getenv("ORS_API_DIRECTIONS_URL", default="")
 
     # For example : Hard-coded lat/lng for start and end points
-    start_coords = [-77.434769, 37.54129]  # (lon, lat) for Richmond, VA
-    end_coords = [-74.172363, 40.735657]   # Newark, NJ
+    # start_coords = [-77.434769, 37.54129]  # (lon, lat) for Richmond, VA
+    # end_coords = [-74.172363, 40.735657]   # Newark, NJ
 
     headers = {
         'Authorization': ORS_API_KEY,
@@ -52,7 +52,7 @@ def get_route_data(start_address, end_address):
         ]
     }
 
-    response = requests.post(ORS_API_DRIVING_CAR_URL, json=body, headers=headers)
+    response = requests.post(ORS_API_DIRECTIONS_URL, json=body, headers=headers)
     data = response.json()
 
     # parse out distance (meters) and duration (seconds) from the response
