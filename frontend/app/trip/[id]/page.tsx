@@ -27,6 +27,15 @@ export default function TripPage() {
         }
     };
 
+    const handleCalculate = async () => {
+        try {
+          await axios.post(`${tripsApiUrl}${id}/calculate_route/`);
+          fetchTrip();
+        } catch (err) {
+          console.error(err);
+        }
+    };
+
     useEffect(() => {
         if (id) {
           fetchTrip();
@@ -42,6 +51,7 @@ export default function TripPage() {
           <p><strong>Current:</strong> {trip.current_location}</p>
           <p><strong>Pickup:</strong> {trip.pickup_location}</p>
           <p><strong>Dropoff:</strong> {trip.dropoff_location}</p>
+          <button onClick={handleCalculate}>Calculate Route & HOS</button>
         </div>
     );
 }
