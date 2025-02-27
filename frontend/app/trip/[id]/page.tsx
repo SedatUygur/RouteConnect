@@ -5,10 +5,21 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 
+import DailyLogPdf from '@/components/DailyLogPdf';
+
 //import RouteMap from '@/components/RouteMap';
 const DynamicRouteMap = dynamic(() => import('@/components/RouteMap'), {
     ssr: false,
 });
+
+interface DailyLog {
+    id: number;
+    date: string;
+    total_driving: number;
+    total_on_duty: number;
+    total_off_duty: number;
+    total_sleeper_berth: number;
+}
 
 interface Stop {
     id: number;
@@ -24,6 +35,7 @@ interface Trip {
     pickup_location: string;
     dropoff_location: string;
     geometry?: [number, number][];
+    logs: DailyLog[];
     stops: Stop[];
 }
 
@@ -32,6 +44,7 @@ export default function TripPage() {
 
     const { id } = useParams();
     const [ trip, setTrip ] = useState<Trip | null>(null);
+    const [showPdf, setShowPdf] = useState(false);
 
     const fetchTrip = async () => {
         try {
@@ -59,7 +72,6 @@ export default function TripPage() {
     }, [id]);
 
     if (!trip) return <div>Loading trip details...</div>;
-    console.log(trip);
 
     return (
         <div style={{ padding: '1rem' }}>
@@ -85,6 +97,12 @@ export default function TripPage() {
             <div style={{ margin: '2rem 0' }}>
                 <h3>Route Map</h3>
                 <DynamicRouteMap routeCoordinates={trip.geometry || []} />
+            </div>
+
+            <div>
+                <h3>Daily Logs</h3>
+                <button onClick={() => setShowPdf(true)}>Generate PDF Daily Log</button>
+                {showPdf && <DailyLogPdf logs={trip.logs} />}
             </div>
         </div>
     );

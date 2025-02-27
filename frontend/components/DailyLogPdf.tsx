@@ -79,9 +79,15 @@ const DailyLogDocument = ({ logs }: { logs: DailyLog[] }) => (
             <View key={log.id} style={styles.logItem}>
               <Text>Date: {log.date}</Text>
               <View style={{ flexDirection: 'row', height: 50, border: '1 solid black' }}>
-                <View style={{ width: drivingWidth, backgroundColor: '#a8d5e2' }} />
-                <View style={{ width: onDutyWidth, backgroundColor: '#f3eac2' }} />
-                <View style={{ width: offDutyWidth, backgroundColor: '#d3e9d7' }} />
+                <View style={{ width: drivingWidth, backgroundColor: '#a8d5e2' }}>
+                    <Text>driving</Text>
+                </View>
+                <View style={{ width: onDutyWidth, backgroundColor: '#f3eac2' }}>
+                    <Text>onDuty</Text>
+                </View>
+                <View style={{ width: offDutyWidth, backgroundColor: '#d3e9d7' }}>
+                    <Text>offDuty</Text>
+                </View>
               </View>
             </View>
           );
