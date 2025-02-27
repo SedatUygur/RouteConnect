@@ -10,7 +10,14 @@ import {
     View,
 } from '@react-pdf/renderer';
 
-interface DailyLog {
+// Define interfaces for timeline events and daily logs.
+export interface DailyLogEvent {
+    start_time: string; // ISO string e.g., "2025-02-25T08:30:00Z"
+    end_time: string;   // ISO string e.g., "2025-02-25T10:00:00Z"
+    status: 'Driving' | 'On Duty' | 'Off Duty' | 'Sleeper';
+}
+
+export interface DailyLog {
     id: number;
     date: string;
     total_driving: number;
