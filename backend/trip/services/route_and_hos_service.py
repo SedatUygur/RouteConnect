@@ -44,6 +44,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     # Store in the Trip model
     trip.total_distance = total_distance
     trip.estimated_duration = pure_driving_duration
+    trip.geometry = route_geometry
     trip.save()
 
     # Determine time zones at the start and destination

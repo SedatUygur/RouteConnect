@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
+
+//import RouteMap from '@/components/RouteMap';
+const DynamicRouteMap = dynamic(() => import('@/components/RouteMap'), {
+    ssr: false,
+});
 
 interface Stop {
     id: number;
@@ -53,6 +59,7 @@ export default function TripPage() {
     }, [id]);
 
     if (!trip) return <div>Loading trip details...</div>;
+    console.log(trip);
 
     return (
         <div style={{ padding: '1rem' }}>
@@ -74,6 +81,11 @@ export default function TripPage() {
                     </ul>
                 </div>
             )}
+
+            <div style={{ margin: '2rem 0' }}>
+                <h3>Route Map</h3>
+                <DynamicRouteMap routeCoordinates={trip.geometry || []} />
+            </div>
         </div>
     );
 }
