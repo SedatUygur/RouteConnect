@@ -4,9 +4,10 @@ import React from 'react';
 import {
     Document,
     Page,
+    PDFDownloadLink,
+    StyleSheet,
     Text,
     View,
-    StyleSheet,
 } from '@react-pdf/renderer';
 
 interface DailyLog {
@@ -89,10 +90,12 @@ const DailyLogDocument = ({ logs }: { logs: DailyLog[] }) => (
     </Document>
 );
 
-export default function DailyLogPdf() {
+export default function DailyLogPdf({ logs }: DailyLogPdfProps) {
   return (
     <div>
-      <h1>Daily Log PDF</h1>
+      <PDFDownloadLink document={<DailyLogDocument logs={logs} />} fileName="daily_log.pdf">
+        {({ loading }) => (loading ? 'Generating PDF...' : 'Download Daily Log PDF')}
+      </PDFDownloadLink>
     </div>
   );
 }
