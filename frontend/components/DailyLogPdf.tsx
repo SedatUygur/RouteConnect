@@ -69,6 +69,25 @@ const styles = StyleSheet.create({
     },
 });
 
+// Helper function: given an event and the log's date (assumed in YYYY-MM-DD), compute its left offset and width.
+const computePosition = (event: DailyLogEvent, logDate: string): { left: string; width: string } => {
+    const midnight = new Date(logDate + 'T00:00:00'); // local midnight for that day
+    const eventStart = new Date(event.start_time);
+    const eventEnd = new Date(event.end_time);
+    const totalDayMs = 24 * 3600 * 1000;
+  
+    const leftMs = Math.max(eventStart.getTime() - midnight.getTime(), 0);
+    const widthMs = eventEnd.getTime() - eventStart.getTime();
+  
+    const leftPercent = (leftMs / totalDayMs) * 100;
+    const widthPercent = (widthMs / totalDayMs) * 100;
+  
+    return {
+      left: leftPercent.toFixed(2) + '%',
+      width: widthPercent.toFixed(2) + '%',
+    };
+};
+
 const DailyLogDocument = ({ logs }: { logs: DailyLog[] }) => (
     <Document>
       <Page size="A4" style={styles.page}>
