@@ -7,19 +7,27 @@ load_dotenv()
 def geocode_address(address):
     OSM_NOMINATIM_URL = os.getenv("OSM_NOMINATIM_URL", default="")
 
+    headers = {
+        'User-Agent': 'PostmanRuntime/7.43.0',
+        'From': 'sedat.uygur@outlook.com'
+    }
+
     params = {
         'q': address,
         'format': 'json',
         'limit': 1
     }
 
-    response = requests.get(OSM_NOMINATIM_URL, params=params)
-    data = response.json()
-
-    if data:
-        lon = float(data[0]['lon'])
-        lat = float(data[0]['lat'])
-        return [lon, lat]
+    response = requests.get(OSM_NOMINATIM_URL, headers=headers, params=params)
+    
+    if response:
+        data = response.json()
+        if data:
+            lon = float(data[0]['lon'])
+            lat = float(data[0]['lat'])
+            return [lon, lat]
+        else:
+            raise Exception(f"Geocoding failed for address: {address}")
     else:
         raise Exception(f"Geocoding failed for address: {address}")
 
@@ -45,8 +53,9 @@ def get_route_data(start_address, end_address):
     # end_coords = [-74.172363, 40.735657]   # Newark, NJ
 
     headers = {
+        'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
         'Authorization': ORS_API_KEY,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json; charset=utf-8'
     }
     # Call directions API with start coordinates and end coordinates
     body = {
@@ -60,16 +69,19 @@ def get_route_data(start_address, end_address):
     data = response.json()
 
     # parse out distance (meters) and duration (seconds) from the response
-    feature = data['features'][0]
-    segment = feature['properties']['segments'][0]
-    dist_meters = segment['distance']
-    dur_seconds = segment['duration']
+    if data and 'metadata' in data and 'routes' in data and len(data['routes']) > 0:
+        route = data['routes'][0]
+        segment = route['segments'][0]
+        dist_meters = segment['distance']
+        dur_seconds = segment['duration']
 
-    distance_miles = dist_meters / 1609.34
-    duration_hours = dur_seconds / 3600.0
+        distance_miles = dist_meters / 1609.34
+        duration_hours = dur_seconds / 3600.0
 
-    return {
-        'distance': distance_miles,
-        'duration': duration_hours,
-        'geometry': feature['geometry']['coordinates']
-    }
+        return {
+            'distance': distance_miles,
+            'duration': duration_hours,
+            'geometry': data['metadata']['query']['coordinates']
+        }
+    else:
+        raise Exception(f"Route calculation failed for start address: {start_address} and end address: {end_address}")

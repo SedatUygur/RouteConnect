@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from .models import Trip
 from .serializers import TripSerializer
+from .services.route_and_hos_service import calculate_trip_stops
 # Create your views here.
 class TripViewSet(viewsets.ModelViewSet):
     queryset = Trip.objects.all()
@@ -12,6 +13,6 @@ class TripViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def calculate_route(self, request, pk=None):
         trip = self.get_object()
-        # Calculate trip stops.
+        calculate_trip_stops(trip)
         serializer = TripSerializer(trip)
         return Response(serializer.data, status=status.HTTP_200_OK)

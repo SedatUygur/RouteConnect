@@ -4,12 +4,21 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 
+interface Stop {
+    id: number;
+    stop_type: string;
+    location: string;
+    start_time: string;
+    end_time: string;
+}
+
 interface Trip {
     id: number;
     current_location: string;
     pickup_location: string;
     dropoff_location: string;
     geometry?: [number, number][];
+    stops: Stop[];
 }
 
 export default function TripPage() {
@@ -47,11 +56,24 @@ export default function TripPage() {
 
     return (
         <div style={{ padding: '1rem' }}>
-          <h2>Trip {trip.id} Details</h2>
-          <p><strong>Current:</strong> {trip.current_location}</p>
-          <p><strong>Pickup:</strong> {trip.pickup_location}</p>
-          <p><strong>Dropoff:</strong> {trip.dropoff_location}</p>
-          <button onClick={handleCalculate}>Calculate Route & HOS</button>
+            <h2>Trip {trip.id} Details</h2>
+            <p><strong>Current:</strong> {trip.current_location}</p>
+            <p><strong>Pickup:</strong> {trip.pickup_location}</p>
+            <p><strong>Dropoff:</strong> {trip.dropoff_location}</p>
+            <button onClick={handleCalculate}>Calculate Route & HOS</button>
+
+            {trip.stops && trip.stops.length > 0 && (
+                <div>
+                    <h3>Stops</h3>
+                    <ul>
+                        {trip.stops.map((stop) => (
+                            <li key={stop.id}>
+                                <strong>{stop.stop_type}</strong> at {stop.location} from {new Date(stop.start_time).toLocaleString()} to {new Date(stop.end_time).toLocaleString()}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }

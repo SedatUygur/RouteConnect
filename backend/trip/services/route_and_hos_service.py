@@ -51,8 +51,11 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     dest_coords = None
     try:
         # get geocoded coordinates from the map client if available
-        start_coords = get_route_data(trip.current_location, trip.current_location)['geometry'][0]
-        dest_coords = get_route_data(trip.dropoff_location, trip.dropoff_location)['geometry'][0]
+        current_route = get_route_data(trip.current_location, trip.current_location)
+        dropoff_route = get_route_data(trip.dropoff_location, trip.dropoff_location)
+
+        start_coords = current_route['geometry'][0]
+        dest_coords = dropoff_route['geometry'][0]
     except Exception:
         pass  # Fallback if not available
 
