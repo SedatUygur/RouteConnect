@@ -33,6 +33,14 @@ interface DailyLogPdfProps {
 // Helper to convert hours into a percentage width on a 24-hour grid
 const hourToPercent = (hour: number): string => ((hour / 24) * 100).toFixed(2) + '%';
 
+// Map statuses to colors.
+const statusColors: { [key: string]: string } = {
+    Driving: '#a8d5e2',
+    'On Duty': '#f3eac2',
+    'Off Duty': '#d3e9d7',
+    Sleeper: '#c8bfe7',
+};
+
 // Define styles for the PDF document
 const styles = StyleSheet.create({
     page: {
