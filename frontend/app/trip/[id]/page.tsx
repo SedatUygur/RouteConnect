@@ -65,17 +65,19 @@ export default function TripDetail() {
     if (!trip) return <div>Loading trip details...</div>;
 
     return (
-        <div style={{ padding: '1rem' }}>
-            <h2>Trip {trip.id} Details</h2>
-            <p><strong>Current:</strong> {trip.current_location}</p>
-            <p><strong>Pickup:</strong> {trip.pickup_location}</p>
-            <p><strong>Dropoff:</strong> {trip.dropoff_location}</p>
-            <button onClick={handleCalculate}>Calculate Route & HOS</button>
+        <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-bold text-center mb-4">Trip {trip.id} Details</h2>
+            <div className="space-y-2">
+                <p><strong>Current:</strong> {trip.current_location}</p>
+                <p><strong>Pickup:</strong> {trip.pickup_location}</p>
+                <p><strong>Dropoff:</strong> {trip.dropoff_location}</p>
+            </div>
+            <button className="w-full bg-blue-600 text-white py-2 mt-4 rounded-md hover:bg-blue-700 transition" onClick={handleCalculate}>Calculate Route & HOS</button>
 
             {trip.stops && trip.stops.length > 0 && (
-                <div>
-                    <h3>Stops</h3>
-                    <ul>
+                <div className="mt-4">
+                    <h3 className="text-lg font-semibold">Stops</h3>
+                    <ul className="list-disc list-inside space-y-2">
                         {trip.stops.map((stop) => (
                             <li key={stop.id}>
                                 <strong>{stop.stop_type}</strong> at {stop.location} from{" "}
@@ -87,14 +89,14 @@ export default function TripDetail() {
                 </div>
             )}
 
-            <div style={{ margin: '2rem 0' }}>
-                <h3>Route Map</h3>
+            <div className="mt-4">
+                <h3 className="text-lg font-semibold">Route Map</h3>
                 <DynamicRouteMap routeCoordinates={trip.geometry || []} />
             </div>
 
-            <div>
-                <h3>Daily Logs</h3>
-                <button onClick={() => setShowPdf(true)}>
+            <div className="mt-4">
+                <h3 className="text-lg font-semibold">Daily Logs</h3>
+                <button className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onClick={() => setShowPdf(true)}>
                     Generate PDF Daily Log
                 </button>
                 {showPdf && trip.logs && <DailyLogPdf logs={trip.logs} />}
