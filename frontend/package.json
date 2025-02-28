@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "prettier --check . && next build",
     "build:local": "prettier --write . && next build",
+    "check": "prettier --check .",
     "format": "prettier --write .",
     "start": "next start",
     "lint": "next lint",
