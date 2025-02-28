@@ -8,7 +8,8 @@
     "build:local": "prettier --write . && next build",
     "format": "prettier --write .",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.2.2",
@@ -28,10 +29,15 @@
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
     "eslint-config-prettier": "^10.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
     "postcss": "^8",
     "prettier": "^3.5.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }
