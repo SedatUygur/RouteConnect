@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prettier --check . && next build",
+    "build:local": "prettier --write . && next build",
+    "format": "prettier --write .",
     "start": "next start",
     "lint": "next lint"
   },
