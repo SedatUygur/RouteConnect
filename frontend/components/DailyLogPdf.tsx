@@ -136,8 +136,8 @@ const DailyLogDocument = ({ logs }: { logs: DailyLog[] }) => (
 
 export default function DailyLogPdf({ logs }: DailyLogPdfProps) {
   return (
-    <div>
-      <PDFDownloadLink document={<DailyLogDocument logs={logs} />} fileName="daily_log.pdf">
+    <div className="mt-4">
+      <PDFDownloadLink className="bg-blue-600 text-white py-2 px-4 rounded inline-block hover:bg-blue-700 transition-colors" document={<DailyLogDocument logs={logs} />} fileName="daily_log.pdf">
         {({ loading }) => (loading ? 'Generating PDF...' : 'Download Daily Log PDF')}
       </PDFDownloadLink>
     </div>

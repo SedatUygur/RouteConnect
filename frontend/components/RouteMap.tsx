@@ -9,8 +9,10 @@ interface RouteMapProps {
 export default function RouteMap({ routeCoordinates }: RouteMapProps) {
     const positions: [number, number][] = routeCoordinates.map(coord => [coord[1], coord[0]]);
     return (
+      <div className="w-full h-90 md:h-110">
         <MapContainer
           center={positions.length ? (positions[0] as [number, number]) : [40, -95]}
+          className="w-full h-full rounded"
           zoom={5}
           style={{ height: '400px', width: '100%' }}
         >
@@ -22,5 +24,6 @@ export default function RouteMap({ routeCoordinates }: RouteMapProps) {
             <Polyline positions={positions} color="blue" />
           )}
         </MapContainer>
+      </div>
     );
 }
