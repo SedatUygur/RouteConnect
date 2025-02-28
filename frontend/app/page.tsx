@@ -41,26 +41,26 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Create a New Trip</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="bg-white shadow-md rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-4 text-center">Create a New Trip</h2>
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label>Current Location:</label>
-          <input type="text" value={currentLocation} onChange={(e) => setCurrentLocation(e.target.value)} placeholder="Enter current address" required />
+          <label className="block text-sm font-medium text-gray-700">Current Location:</label>
+          <input className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" value={currentLocation} onChange={(e) => setCurrentLocation(e.target.value)} placeholder="Enter current address" required />
         </div>
         <div>
-          <label>Pickup Location:</label>
-          <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} placeholder="Enter pickup address" required />
+          <label className="block text-sm font-medium text-gray-700">Pickup Location:</label>
+          <input className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} placeholder="Enter pickup address" required />
         </div>
         <div>
-          <label>Drop-off Location:</label>
-          <input type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} placeholder="Enter drop-off address" required />
+          <label className="block text-sm font-medium text-gray-700">Drop-off Location:</label>
+          <input className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} placeholder="Enter drop-off address" required />
         </div>
         <div>
-          <label>Current Cycle Hours Used:</label>
-          <input type="number" step="0.1" value={cycleHours} onChange={(e) => setCycleHours(e.target.value)} placeholder="e.g., 12.5" required />
+          <label className="block text-sm font-medium text-gray-700">Current Cycle Hours Used:</label>
+          <input className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" type="number" step="0.1" value={cycleHours} onChange={(e) => setCycleHours(e.target.value)} placeholder="e.g., 12.5" required />
         </div>
-        <button type="submit" disabled={isLoading}>{isLoading ? "Loading..." : "Create Trip"}</button>
+        <button className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition" type="submit" disabled={isLoading}>{isLoading ? "Loading..." : "Create Trip"}</button>
       </form>
     </div>
   );
