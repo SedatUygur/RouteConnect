@@ -25,12 +25,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-100 text-gray-900`}
       >
-        <header style={{ padding: '1rem', background: '#f4f4f4' }}>
-          <h1>Trip Planner & ELD Log Generator</h1>
+        <header className="bg-blue-600 text-white py-4 text-center shadow-md">
+          <h1 className="text-2xl font-bold">Trip Planner & ELD Log Generator</h1>
         </header>
-        <main>{children}</main>
+        <main className="max-w-4xl mx-auto p-4">{children}</main>
       </body>
     </html>
   );
