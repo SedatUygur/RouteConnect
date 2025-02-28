@@ -5,21 +5,12 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 
-import DailyLogPdf from '@/components/DailyLogPdf';
+import DailyLogPdf, { DailyLog } from "@/components/DailyLogPdf";
 
 //import RouteMap from '@/components/RouteMap';
 const DynamicRouteMap = dynamic(() => import('@/components/RouteMap'), {
     ssr: false,
 });
-
-interface DailyLog {
-    id: number;
-    date: string;
-    total_driving: number;
-    total_on_duty: number;
-    total_off_duty: number;
-    total_sleeper_berth: number;
-}
 
 interface Stop {
     id: number;
@@ -39,7 +30,7 @@ interface Trip {
     stops: Stop[];
 }
 
-export default function TripPage() {
+export default function TripDetail() {
     const tripsApiUrl = process.env.NEXT_PUBLIC_TRIPS_API_URL;
 
     const { id } = useParams();
@@ -87,7 +78,9 @@ export default function TripPage() {
                     <ul>
                         {trip.stops.map((stop) => (
                             <li key={stop.id}>
-                                <strong>{stop.stop_type}</strong> at {stop.location} from {new Date(stop.start_time).toLocaleString()} to {new Date(stop.end_time).toLocaleString()}
+                                <strong>{stop.stop_type}</strong> at {stop.location} from{" "}
+                                {new Date(stop.start_time).toLocaleString()} to{" "}
+                                {new Date(stop.end_time).toLocaleString()}
                             </li>
                         ))}
                     </ul>
@@ -101,8 +94,10 @@ export default function TripPage() {
 
             <div>
                 <h3>Daily Logs</h3>
-                <button onClick={() => setShowPdf(true)}>Generate PDF Daily Log</button>
-                {showPdf && <DailyLogPdf logs={trip.logs} />}
+                <button onClick={() => setShowPdf(true)}>
+                    Generate PDF Daily Log
+                </button>
+                {showPdf && trip.logs && <DailyLogPdf logs={trip.logs} />}
             </div>
         </div>
     );

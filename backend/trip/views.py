@@ -13,6 +13,6 @@ class TripViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def calculate_route(self, request, pk=None):
         trip = self.get_object()
-        calculate_trip_stops(trip)
+        calculate_trip_stops(trip, None, True)
         serializer = TripSerializer(trip)
         return Response(serializer.data, status=status.HTTP_200_OK)
