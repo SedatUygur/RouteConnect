@@ -14,6 +14,15 @@ class Trip(models.Model):
     estimated_duration = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     geometry = models.JSONField(default=list, blank=True)  # Store the route geometry as a list of coordinates
 
+    # Additional fields: name of carrier, main office address, etc.
+    name_of_carrier = models.CharField(max_length=255, blank=True)
+    main_office_address = models.CharField(max_length=255, blank=True)
+    home_terminal_address = models.CharField(max_length=255, blank=True)
+    vehicle_number = models.CharField(max_length=255, blank=True)
+    manifest_number = models.CharField(max_length=255, blank=True)
+    shipper_company = models.CharField(max_length=255, blank=True)
+    commodity = models.CharField(max_length=255, blank=True)
+
     def __str__(self):
         return f"Trip {self.id} from {self.pickup_location} to {self.dropoff_location}"
     
