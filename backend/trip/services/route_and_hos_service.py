@@ -47,9 +47,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
     trip.geometry = route_geometry
     trip.save()
 
-    # Determine time zones at the start and destination
-    start_coords = None
-    dest_coords = None
+    # 2) Time zone determination
     try:
         # get geocoded coordinates from the map client if available
         current_route = get_route_data(trip.current_location, trip.current_location)
@@ -57,21 +55,27 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
 
         start_coords = current_route['geometry'][0]
         dest_coords = dropoff_route['geometry'][0]
-    except Exception as e:
-        print("The error is: ", e)
 
-    start_tz_str = tf.timezone_at(lng=start_coords[0], lat=start_coords[1]) if start_coords else "America/New_York"
-    dest_tz_str = tf.timezone_at(lng=dest_coords[0], lat=dest_coords[1]) if dest_coords else "America/New_York"
+        start_tz_str = tf.timezone_at(lng=start_coords[0], lat=start_coords[1])
+        dest_tz_str = tf.timezone_at(lng=dest_coords[0], lat=dest_coords[1])
+    except Exception as e:
+        print("Time zone determination error:", e)
+        start_tz_str = "America/New_York"
+        dest_tz_str = "America/New_York"
 
     # Use the provided driver_timezone if given; otherwise, default to the start location's timezone.
     effective_tz_str = driver_timezone if driver_timezone else start_tz_str
     effective_tz = pytz.timezone(effective_tz_str)
 
-    # 2. Set starting time in driver's effective local time.
+    # 3) Clear old stops/logs
+    trip.stops.all().delete()
+    trip.logs.all().delete()
+
+    # 4) Start time in local tz
     current_dt = timezone.now().astimezone(effective_tz)
 
-    # 3. Initialize rolling on-duty period storage as a list of (start, end) tuples.
-    on_duty_periods = []  # Each tuple: (start_dt, end_dt)
+    # Rolling on-duty periods
+    on_duty_periods = []  # list of (start, end)
     
     def add_on_duty_period(start, end):
         on_duty_periods.append((start, end))
@@ -90,22 +94,24 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
 
         return total
 
-    # 4. Clear previous stops and logs for recalculation.
-    trip.stops.all().delete()
-    trip.logs.all().delete()
+    # 5) Helper: record an event in 15-min increments
+    def record_event(event_list, start, end, status, remarks=""):
+        increment = datetime.timedelta(minutes=15)
+        block_start = start
+        while block_start < end:
+            block_end = min(block_start + increment, end)
+            event_list.append({
+                "start_time": block_start.isoformat(),
+                "end_time": block_end.isoformat(),
+                "status": status,
+                "remarks": remarks
+            })
+            block_start = block_end
 
-    # Helper: record an event into a list as a DailyLogEvent.
-    def record_event(event_list, start, end, status):
-        event_list.append({
-            "start_time": start.isoformat(),
-            "end_time": end.isoformat(),
-            "status": status
-        })
-
-    # Initialize daily events list.
+    # Initialize daily events.
     daily_events = []
 
-    # 5. Insert the Pickup Stop (1 hour) and record its event.
+    # 6) Insert 1-hour pickup (On Duty)
     pickup_start = current_dt
     pickup_end = pickup_start + datetime.timedelta(hours=1)
     Stop.objects.create(
@@ -115,16 +121,18 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         start_time=pickup_start,
         end_time=pickup_end
     )
-
-    record_event(daily_events, pickup_start, pickup_end, "Pickup")
+    # We treat "Pickup" as On Duty
+    record_event(daily_events, pickup_start, pickup_end, "On Duty", remarks="Pickup at city, ST")
     add_on_duty_period(pickup_start, pickup_end)
     current_dt = pickup_end  # Update time after pickup
 
-    # 6. Set up daily parameters
+    # daily counters
     current_day = current_dt.date()
-    daily_driving_hours = 0.0  # driving hours for today
-    daily_on_duty_start = current_dt  # start time of the current on-duty block for this day
+    daily_driving_hours = 0.0
     daily_on_duty_hours = 1.0  # already 1 hour for pickup
+    daily_off_duty_hours = 0.0
+    daily_sleeper_hours = 0.0
+    # daily_on_duty_start = current_dt  # start time of the current on-duty block for this day
     
     miles_driven = 0.0
     next_fuel_mile = 1000.0  # Fueling is required every 1000 miles
@@ -143,25 +151,28 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         if rolling_on_duty + daily_on_duty_hours >= 70:
             # If rolling on-duty exceeds limit, enforce a 34-hour restart.
             off_duty_duration = 34.0
-            # End the current on-duty period.
-            add_on_duty_period(daily_on_duty_start, current_dt)
+            # End the on-duty block at same time
+            add_on_duty_period(current_dt, current_dt)
             # Record the day's log
             DailyLog.objects.create(
                 trip=trip,
                 date=current_day,
                 total_driving=daily_driving_hours,
                 total_on_duty=daily_on_duty_hours,
-                total_off_duty=off_duty_duration,
-                total_sleeper_berth=off_duty_duration, # if not using sleeper, this remains off duty duration
+                total_off_duty=daily_off_duty_hours + off_duty_duration,
+                total_sleeper_berth=daily_sleeper_hours,
                 events=daily_events,
             )
 
             # Advance time by the mandatory off-duty period
+            record_event(daily_events, current_dt, current_dt + datetime.timedelta(hours=off_duty_duration),
+                         "Off Duty", remarks="34-hour reset (rolling 70hr limit)")
             current_dt += datetime.timedelta(hours=off_duty_duration)
             current_day = current_dt.date()
             daily_driving_hours = 0.0
             daily_on_duty_hours = 0.0
-            daily_on_duty_start = current_dt
+            daily_off_duty_hours = 0.0
+            daily_sleeper_hours = 0.0
             daily_events = []  # reset for new day
             has_taken_30min_break = False
             continue
@@ -183,23 +194,26 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
                 off_duty_duration = 10.0
             
             # End the current on-duty period.
-            add_on_duty_period(daily_on_duty_start, current_dt)
+            add_on_duty_period(current_dt, current_dt)
             # Record the day's log.
             DailyLog.objects.create(
                 trip=trip,
                 date=current_day,
                 total_driving=daily_driving_hours,
                 total_on_duty=daily_on_duty_hours,
-                total_off_duty=off_duty_duration,
-                total_sleeper_berth=sleeper_duration if use_sleeper_berth else 0,
+                total_off_duty=daily_off_duty_hours + off_duty_duration,
+                total_sleeper_berth=daily_sleeper_hours if use_sleeper_berth else 0,
                 events=daily_events,
             )
             # Advance time by the off-duty period.
+            record_event(daily_events, current_dt, current_dt + datetime.timedelta(hours=off_duty_duration),
+                         "Off Duty", remarks="End of day reset")
             current_dt += datetime.timedelta(hours=off_duty_duration)
             current_day = current_dt.date()
             daily_driving_hours = 0.0
             daily_on_duty_hours = 0.0
-            daily_on_duty_start = current_dt
+            daily_off_duty_hours = 0.0
+            daily_sleeper_hours = 0.0
             daily_events = []  # reset for new day
             has_taken_30min_break = False
             continue
@@ -218,49 +232,47 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
             reached_fuel_stop = (miles_driven + miles_to_drive) >= next_fuel_mile
 
         # If the segment would cross the 8-hour driving mark, insert a 30-minute break.
-        if daily_driving_hours < 8 and daily_driving_hours + drive_time > 8 and not has_taken_30min_break:
+        if daily_driving_hours < 8 and (daily_driving_hours + drive_time) > 8 and not has_taken_30min_break:
+            # partial driving -> break
             time_until_break = 8.0 - daily_driving_hours
-            drive_time_before_break = time_until_break
-            miles_before_break = drive_time_before_break * drive_speed
+            partial_drive_start = current_dt
+            partial_drive_end = current_dt + datetime.timedelta(hours=time_until_break)
+            record_event(daily_events, partial_drive_start, partial_drive_end, "Driving", remarks="Driving until break")
 
-            # Record the driving segment until break.
-            segment_start = current_dt
-            segment_end = current_dt + datetime.timedelta(hours=drive_time_before_break)
-            record_event(daily_events, segment_start, segment_end, "Driving")
-            
-            daily_driving_hours += drive_time_before_break
-            daily_on_duty_hours += drive_time_before_break
-            current_dt = segment_end
+            daily_driving_hours += time_until_break
+            daily_on_duty_hours += time_until_break
+            miles_before_break = time_until_break * drive_speed
             miles_driven += miles_before_break
             miles_remaining -= miles_before_break
+            current_dt = partial_drive_end
 
-            # Insert the 30-minute break and record it.
+            # Insert the 30-minute break and record it. (Off Duty)
             break_start = current_dt
             break_end = current_dt + datetime.timedelta(minutes=30)
 
             Stop.objects.create(
                 trip=trip,
                 stop_type="Break",
-                location="Rest Area",
+                location="Rest Area (city, ST)",
                 start_time=break_start,
                 end_time=break_end
             )
 
-            record_event(daily_events, break_start, break_end, "Break")
+            record_event(daily_events, break_start, break_end, "Off Duty", remarks="30-min break")
             current_dt = break_end
-            daily_on_duty_hours += 0.5
+            daily_off_duty_hours += 0.5
             has_taken_30min_break = True
             continue  # Recalculate available time after the break
         
         # Record driving event for the current segment.
-        segment_start = current_dt
-        segment_end = current_dt + datetime.timedelta(hours=drive_time)
-        record_event(daily_events, segment_start, segment_end, "Driving")
+        drive_start = current_dt
+        drive_end = current_dt + datetime.timedelta(hours=drive_time)
+        record_event(daily_events, drive_start, drive_end, "Driving", remarks="Driving on route")
 
         # Drive for the computed drive_time
         daily_driving_hours += drive_time
         daily_on_duty_hours += drive_time
-        current_dt = segment_end
+        current_dt = drive_end
         miles_driven += miles_to_drive
         miles_remaining -= miles_to_drive
 
@@ -268,7 +280,7 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         if reached_fuel_stop and miles_remaining > 0:
             fuel_start = current_dt
             fuel_duration = 0.25  # 15 minutes
-            fuel_end = current_dt + datetime.timedelta(hours=fuel_duration)
+            fuel_end = fuel_start + datetime.timedelta(hours=fuel_duration)
 
             Stop.objects.create(
                 trip=trip,
@@ -278,14 +290,14 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
                 end_time=fuel_end
             )
 
-            record_event(daily_events, fuel_start, fuel_end, "Fuel")
-            current_dt = fuel_end
+            record_event(daily_events, fuel_start, fuel_end, "On Duty", remarks="Fueling at city, ST")
             daily_on_duty_hours += fuel_duration
+            current_dt = fuel_end
             next_fuel_mile += 1000  # Set up next fuel stop
     
-    # 8. After all driving is complete, insert the Dropoff Stop (1 hour).
+    # 8. After all driving is complete, insert the Dropoff Stop (1 hr, On Duty).
     dropoff_start = current_dt
-    dropoff_end = current_dt + datetime.timedelta(hours=1)
+    dropoff_end = dropoff_start + datetime.timedelta(hours=1)
 
     Stop.objects.create(
         trip=trip,
@@ -295,10 +307,11 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         end_time=dropoff_end
     )
 
-    record_event(daily_events, dropoff_start, dropoff_end, "Dropoff")
+    record_event(daily_events, dropoff_start, dropoff_end, "On Duty", remarks="Dropoff at city, ST")
     daily_on_duty_hours += 1
     current_dt = dropoff_end
-    add_on_duty_period(daily_on_duty_start, current_dt)
+    # end on-duty block
+    add_on_duty_period(dropoff_start, dropoff_end)
 
     # 9. Record the final day's log with detailed events.
     DailyLog.objects.create(
@@ -306,8 +319,8 @@ def calculate_trip_stops(trip, driver_timezone=None, use_sleeper_berth=False):
         date=current_day,
         total_driving=daily_driving_hours,
         total_on_duty=daily_on_duty_hours,
-        total_off_duty=0,
-        total_sleeper_berth=0,
+        total_off_duty=daily_off_duty_hours,
+        total_sleeper_berth=daily_sleeper_hours,
         events=daily_events,
     )
 
