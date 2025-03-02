@@ -16,7 +16,7 @@ interface EventItem {
   start_time: string;
   end_time: string;
   status: "Off Duty" | "Sleeper Berth" | "Driving" | "On Duty";
-  remarks: string;
+  remarks?: string;
 }
 
 interface DailyLog {
