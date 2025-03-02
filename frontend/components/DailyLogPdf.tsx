@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
-"use client";
-import React, { JSX } from "react";
+'use client';
+import React, { JSX } from 'react';
 import {
   PDFDownloadLink,
   Document,
@@ -9,15 +9,15 @@ import {
   Text,
   View,
   StyleSheet,
-} from "@react-pdf/renderer";
+} from '@react-pdf/renderer';
 
 /* ------------------------------------------------------------------
    1) Data Models
 ------------------------------------------------------------------ */
 interface EventItem {
   start_time: string; // ISO datetime
-  end_time: string;   // ISO datetime
-  status: "Off Duty" | "Sleeper Berth" | "Driving" | "On Duty";
+  end_time: string; // ISO datetime
+  status: 'Off Duty' | 'Sleeper Berth' | 'Driving' | 'On Duty';
 }
 
 interface DailyLog {
@@ -56,29 +56,29 @@ interface DailyLogPdfProps {
 ------------------------------------------------------------------ */
 const styles = StyleSheet.create({
   page: {
-    width: "8.5in",
-    height: "11in",
-    position: "relative",
-    fontFamily: "Helvetica",
+    width: '8.5in',
+    height: '11in',
+    position: 'relative',
+    fontFamily: 'Helvetica',
     fontSize: 10,
   },
   background: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
-    width: "8.5in",
-    height: "11in",
+    width: '8.5in',
+    height: '11in',
   },
   textField: {
-    position: "absolute",
+    position: 'absolute',
     fontSize: 10,
   },
   timelineLine: {
-    position: "absolute",
-    backgroundColor: "#f00", // red color for timeline lines
+    position: 'absolute',
+    backgroundColor: '#f00', // red color for timeline lines
   },
   statusTotals: {
-    position: "absolute",
+    position: 'absolute',
     fontSize: 8,
   },
 });
@@ -95,13 +95,13 @@ function minutesFromMidnight(isoString: string): number {
 // Map status to row index (0=Off Duty, 1=Sleeper Berth, 2=Driving, 3=On Duty)
 function getStatusRowIndex(status: string): number {
   switch (status) {
-    case "Off Duty":
+    case 'Off Duty':
       return 0;
-    case "Sleeper Berth":
+    case 'Sleeper Berth':
       return 1;
-    case "Driving":
+    case 'Driving':
       return 2;
-    case "On Duty":
+    case 'On Duty':
       return 3;
     default:
       return 0;
@@ -122,21 +122,20 @@ function buildFullTimeline(
   gridLeft: number,
   gridTop: number,
   gridWidth: number,
-  rowHeight: number
+  rowHeight: number,
 ): { lines: JSX.Element[]; statusMinutes: Record<string, number> } {
   const dayStart = 0;
   const dayEnd = 1440; // 24*60
 
   // Sort events by start time (in minutes)
   const sorted = [...events].sort(
-    (a, b) =>
-      minutesFromMidnight(a.start_time) - minutesFromMidnight(b.start_time)
+    (a, b) => minutesFromMidnight(a.start_time) - minutesFromMidnight(b.start_time),
   );
 
   // Initialize with default status "Off Duty" from midnight
   const segments: { start: number; end: number; status: string }[] = [];
   let prevTime = dayStart;
-  let prevStatus = "Off Duty";
+  let prevStatus = 'Off Duty';
 
   // If there are events and the first event doesn't start at midnight, fill gap with default.
   if (sorted.length === 0 || minutesFromMidnight(sorted[0].start_time) > dayStart) {
@@ -176,10 +175,10 @@ function buildFullTimeline(
   // Build timeline lines (only horizontal and vertical boundaries)
   const lines: JSX.Element[] = [];
   const statusMinutes: Record<string, number> = {
-    "Off Duty": 0,
-    "Sleeper Berth": 0,
-    "Driving": 0,
-    "On Duty": 0,
+    'Off Duty': 0,
+    'Sleeper Berth': 0,
+    Driving: 0,
+    'On Duty': 0,
   };
   const ratio = gridWidth / 1440;
 
@@ -201,7 +200,7 @@ function buildFullTimeline(
             height: 1,
           },
         ]}
-      />
+      />,
     );
     statusMinutes[seg.status] += seg.end - seg.start;
 
@@ -225,7 +224,7 @@ function buildFullTimeline(
               height: y2 - y1,
             },
           ]}
-        />
+        />,
       );
     }
   });
@@ -252,18 +251,18 @@ function DailyLogPage({ log, trip }: { log: DailyLog; trip: Trip }) {
   const manifestPos = { top: 546, left: 125 };
   const shipperPos = { top: 589, left: 125 };
 
-  const offDutyPos = { top: 10, right: 65 };
-  const sleeperPos = { top: 37, right: 65 };
-  const drivingPos = { top: 63, right: 65 };
-  const onDutyPos = { top: 90, right: 65 };
-  const totalPos = { top: 135, right: 65 };
+  const offDutyPos = { top: 10, right: 0 };
+  const sleeperPos = { top: 37, right: 0 };
+  const drivingPos = { top: 63, right: 0 };
+  const onDutyPos = { top: 90, right: 0 };
+  const totalPos = { top: 135, right: 0 };
 
   // Timeline area: the timeline covers exactly one day: from midnight to midnight.
   // Here, gridLeft, gridTop, gridWidth, and rowHeight define where the timeline is drawn.
   const gridLeft = 77;
   const gridTop = 285;
   const gridWidth = 464; // width for 24 hours
-  const rowHeight = 25;  // each duty status row height
+  const rowHeight = 25; // each duty status row height
 
   // Build the full timeline (one continuous timeline for the day)
   const { lines: timelineLines, statusMinutes } = buildFullTimeline(
@@ -271,16 +270,16 @@ function DailyLogPage({ log, trip }: { log: DailyLog; trip: Trip }) {
     gridLeft,
     gridTop,
     gridWidth,
-    rowHeight
+    rowHeight,
   );
 
   // Compute total hours per status
-  const offDutyH = statusMinutes["Off Duty"] / 60;
-  const sleeperH = statusMinutes["Sleeper Berth"] / 60;
-  const drivingH = statusMinutes["Driving"] / 60;
-  const onDutyH = statusMinutes["On Duty"] / 60;
+  const offDutyH = statusMinutes['Off Duty'] / 60;
+  const sleeperH = statusMinutes['Sleeper Berth'] / 60;
+  const drivingH = statusMinutes['Driving'] / 60;
+  const onDutyH = statusMinutes['On Duty'] / 60;
   const totalH = offDutyH + sleeperH + drivingH + onDutyH; // should equal 24
-  const fmt = (val: number) => val.toFixed(2).replace(".00", "");
+  const fmt = (val: number) => val.toFixed(2).replace('.00', '');
 
   // Format the date as MM/DD/YYYY
   const d = new Date(log.date);
@@ -321,10 +320,17 @@ function DailyLogPage({ log, trip }: { log: DailyLog; trip: Trip }) {
       <Text style={[styles.textField, { top: carrierPos.top, left: carrierPos.left }]}>
         {trip.name_of_carrier}
       </Text>
-      <Text style={[styles.textField, { top: mainOfficePos.top, left: mainOfficePos.left }]}>
+      <Text
+        style={[styles.textField, { top: mainOfficePos.top, left: mainOfficePos.left }]}
+      >
         {trip.main_office_address}
       </Text>
-      <Text style={[styles.textField, { top: homeTerminalPos.top, left: homeTerminalPos.left }]}>
+      <Text
+        style={[
+          styles.textField,
+          { top: homeTerminalPos.top, left: homeTerminalPos.left },
+        ]}
+      >
         {trip.home_terminal_address}
       </Text>
       <Text style={[styles.textField, { top: manifestPos.top, left: manifestPos.left }]}>
@@ -338,12 +344,30 @@ function DailyLogPage({ log, trip }: { log: DailyLog; trip: Trip }) {
       {timelineLines}
 
       {/* Show total hours for each duty status on the right side */}
-      <View style={[styles.statusTotals, { top: gridTop, left: gridLeft + gridWidth + 20 }]}>
-        <Text style={[styles.textField, { top: offDutyPos.top, left: offDutyPos.left }]}>{fmt(offDutyH)}</Text>
-        <Text style={[styles.textField, { top: sleeperPos.top, left: sleeperPos.left }]}>{fmt(sleeperH)}</Text>
-        <Text style={[styles.textField, { top: drivingPos.top, left: drivingPos.left }]}>{fmt(drivingH)}</Text>
-        <Text style={[styles.textField, { top: onDutyPos.top, left: onDutyPos.left }]}>{fmt(onDutyH)}</Text>
-        <Text style={[styles.textField, { top: totalPos.top, left: totalPos.left }]}>{fmt(totalH)}</Text>
+      <View
+        style={[styles.statusTotals, { top: gridTop, left: gridLeft + gridWidth + 20 }]}
+      >
+        <Text
+          style={[styles.textField, { top: offDutyPos.top, right: offDutyPos.right }]}
+        >
+          {fmt(offDutyH)}
+        </Text>
+        <Text
+          style={[styles.textField, { top: sleeperPos.top, right: sleeperPos.right }]}
+        >
+          {fmt(sleeperH)}
+        </Text>
+        <Text
+          style={[styles.textField, { top: drivingPos.top, right: drivingPos.right }]}
+        >
+          {fmt(drivingH)}
+        </Text>
+        <Text style={[styles.textField, { top: onDutyPos.top, right: onDutyPos.right }]}>
+          {fmt(onDutyH)}
+        </Text>
+        <Text style={[styles.textField, { top: totalPos.top, right: totalPos.right }]}>
+          {fmt(totalH)}
+        </Text>
       </View>
     </Page>
   );
@@ -371,7 +395,7 @@ export default function DailyLogPdf({ trip }: DailyLogPdfProps) {
       document={<DailyLogDocument trip={trip} />}
       fileName={`trip_${trip.id}_daily_log.pdf`}
     >
-      {({ loading }) => (loading ? "Generating PDF..." : "Download Driver's Daily Log")}
+      {({ loading }) => (loading ? 'Generating PDF...' : "Download Driver's Daily Log")}
     </PDFDownloadLink>
   );
 }

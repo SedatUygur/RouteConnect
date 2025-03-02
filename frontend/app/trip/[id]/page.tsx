@@ -15,7 +15,7 @@ const DynamicRouteMap = dynamic(() => import('@/components/RouteMap'), {
 interface EventItem {
   start_time: string;
   end_time: string;
-  status: "Off Duty" | "Sleeper Berth" | "Driving" | "On Duty";
+  status: 'Off Duty' | 'Sleeper Berth' | 'Driving' | 'On Duty';
   remarks?: string;
 }
 
@@ -93,29 +93,49 @@ export default function TripDetail() {
     <div className="rounded-lg bg-white p-6 shadow-md">
       <h2 className="mb-4 text-center text-xl font-bold">Trip {trip.id} Details</h2>
       <div className="space-y-2">
-        <p><strong>From:</strong> {trip.current_location}</p>
-        <p><strong>Pickup:</strong> {trip.pickup_location}</p>
-        <p><strong>To:</strong> {trip.dropoff_location}</p>
+        <p>
+          <strong>From:</strong> {trip.current_location}
+        </p>
+        <p>
+          <strong>Pickup:</strong> {trip.pickup_location}
+        </p>
+        <p>
+          <strong>To:</strong> {trip.dropoff_location}
+        </p>
         {trip.total_distance !== undefined && (
-          <p><strong>Total Miles:</strong> {trip.total_distance}</p>
+          <p>
+            <strong>Total Miles:</strong> {trip.total_distance}
+          </p>
         )}
         {trip.vehicle_number && (
-          <p><strong>Vehicle #:</strong> {trip.vehicle_number}</p>
+          <p>
+            <strong>Vehicle #:</strong> {trip.vehicle_number}
+          </p>
         )}
         {trip.name_of_carrier && (
-          <p><strong>Carrier:</strong> {trip.name_of_carrier}</p>
+          <p>
+            <strong>Carrier:</strong> {trip.name_of_carrier}
+          </p>
         )}
         {trip.main_office_address && (
-          <p><strong>Main Office:</strong> {trip.main_office_address}</p>
+          <p>
+            <strong>Main Office:</strong> {trip.main_office_address}
+          </p>
         )}
         {trip.home_terminal_address && (
-          <p><strong>Home Terminal:</strong> {trip.home_terminal_address}</p>
+          <p>
+            <strong>Home Terminal:</strong> {trip.home_terminal_address}
+          </p>
         )}
         {trip.manifest_number && (
-          <p><strong>Manifest #:</strong> {trip.manifest_number}</p>
+          <p>
+            <strong>Manifest #:</strong> {trip.manifest_number}
+          </p>
         )}
         {trip.shipper_company && trip.commodity && (
-          <p><strong>Shipper & Commodity:</strong> {trip.shipper_company}, {trip.commodity}</p>
+          <p>
+            <strong>Shipper & Commodity:</strong> {trip.shipper_company}, {trip.commodity}
+          </p>
         )}
       </div>
       <button
@@ -128,10 +148,12 @@ export default function TripDetail() {
       {trip.stops?.length > 0 && (
         <div className="mt-4">
           <h3 className="text-lg font-semibold">Stops</h3>
-          <ul className="list-disc list-inside space-y-2">
+          <ul className="list-inside list-disc space-y-2">
             {trip.stops.map((stop) => (
               <li key={stop.id}>
-                <strong>{stop.stop_type}</strong> at {stop.location} from {new Date(stop.start_time).toLocaleString()} to {new Date(stop.end_time).toLocaleString()}
+                <strong>{stop.stop_type}</strong> at {stop.location} from{' '}
+                {new Date(stop.start_time).toLocaleString()} to{' '}
+                {new Date(stop.end_time).toLocaleString()}
               </li>
             ))}
           </ul>

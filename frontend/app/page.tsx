@@ -11,13 +11,13 @@ export default function Home() {
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [cycleHours, setCycleHours] = useState('');
-  const [carrierName, setCarrierName] = useState("");
-  const [mainOfficeAddress, setMainOfficeAddress] = useState("");
-  const [homeTerminalAddress, setHomeTerminalAddress] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
-  const [manifestNumber, setManifestNumber] = useState("");
-  const [shipperCompany, setShipperCompany] = useState("");
-  const [commodity, setCommodity] = useState("");
+  const [carrierName, setCarrierName] = useState('');
+  const [mainOfficeAddress, setMainOfficeAddress] = useState('');
+  const [homeTerminalAddress, setHomeTerminalAddress] = useState('');
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [manifestNumber, setManifestNumber] = useState('');
+  const [shipperCompany, setShipperCompany] = useState('');
+  const [commodity, setCommodity] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -113,69 +113,81 @@ export default function Home() {
         </div>
         {/* New Fields */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Name of Carrier:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Name of Carrier:
+          </label>
           <input
             type="text"
             value={carrierName}
             onChange={(e) => setCarrierName(e.target.value)}
             placeholder="Enter carrier name"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Main Office Address:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Main Office Address:
+          </label>
           <input
             type="text"
             value={mainOfficeAddress}
             onChange={(e) => setMainOfficeAddress(e.target.value)}
             placeholder="Enter main office address"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Home Terminal Address:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Home Terminal Address:
+          </label>
           <input
             type="text"
             value={homeTerminalAddress}
             onChange={(e) => setHomeTerminalAddress(e.target.value)}
             placeholder="Enter home terminal address"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Vehicle Number:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Vehicle Number:
+          </label>
           <input
             type="text"
             value={vehicleNumber}
             onChange={(e) => setVehicleNumber(e.target.value)}
             placeholder="Enter vehicle number or license plate"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Manifest Number:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Manifest Number:
+          </label>
           <input
             type="text"
             value={manifestNumber}
             onChange={(e) => setManifestNumber(e.target.value)}
             placeholder="Enter manifest number or DVL"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Shipper Company:</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Shipper Company:
+          </label>
           <input
             type="text"
             value={shipperCompany}
             onChange={(e) => setShipperCompany(e.target.value)}
             placeholder="Enter shipper company name"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -186,7 +198,7 @@ export default function Home() {
             onChange={(e) => setCommodity(e.target.value)}
             placeholder="Enter commodity"
             required
-            className="w-full border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <button
