@@ -127,34 +127,47 @@ function buildFullTimeline(
   const dayStart = 0;
   const dayEnd = 1440; // 24*60
 
+  // Convert events to minutes and clip to [0,1440]
+  const clipped = events
+    .map((evt) => {
+      const start = Math.max(minutesFromMidnight(evt.start_time), dayStart);
+      const end = Math.min(minutesFromMidnight(evt.end_time), dayEnd);
+      return { start, end, status: evt.status };
+    })
+    .filter((evt) => evt.end > evt.start);
+
   // Sort events by start time (in minutes)
-  const sorted = [...events].sort(
+  /* const sorted = [...events].sort(
     (a, b) => minutesFromMidnight(a.start_time) - minutesFromMidnight(b.start_time),
-  );
+  ); */
+  const sorted = clipped.sort((a, b) => a.start - b.start);
 
   // Initialize with default status "Off Duty" from midnight
   const segments: { start: number; end: number; status: string }[] = [];
   let prevTime = dayStart;
-  let prevStatus = 'Off Duty';
+  let prevStatus = sorted.length > 0 ? sorted[0].status : 'Off Duty';
 
   // If there are events and the first event doesn't start at midnight, fill gap with default.
-  if (sorted.length === 0 || minutesFromMidnight(sorted[0].start_time) > dayStart) {
+  if (sorted.length === 0 || sorted[0].start > dayStart) {
     segments.push({
       start: dayStart,
-      end: sorted.length > 0 ? minutesFromMidnight(sorted[0].start_time) : dayEnd,
-      status: prevStatus,
+      end: sorted.length > 0 ? sorted[0].start : dayEnd,
+      status: 'Off Duty',
     });
-    prevTime = sorted.length > 0 ? minutesFromMidnight(sorted[0].start_time) : dayEnd;
+    prevTime = sorted.length > 0 ? sorted[0].start : dayEnd;
+    if (sorted.length > 0) {
+      prevStatus = sorted[0].status;
+    }
   }
 
   // Process each event
   sorted.forEach((evt) => {
-    const evtStart = minutesFromMidnight(evt.start_time);
-    const evtEnd = minutesFromMidnight(evt.end_time);
+    /* const evtStart = minutesFromMidnight(evt.start_time);
+    const evtEnd = minutesFromMidnight(evt.end_time); */
     // Fill gap from prevTime to event start if any
-    if (evtStart > prevTime) {
-      segments.push({ start: prevTime, end: evtStart, status: prevStatus });
-      prevTime = evtStart;
+    if (evt.start > prevTime) {
+      segments.push({ start: prevTime, end: evt.start, status: prevStatus });
+      // prevTime = evtStart;
     }
     // If status changes at evtStart, add vertical boundary by ending previous segment and starting new one.
     if (evt.status !== prevStatus) {
@@ -162,8 +175,8 @@ function buildFullTimeline(
       prevStatus = evt.status;
     }
     // Add current event segment
-    segments.push({ start: evtStart, end: evtEnd, status: evt.status });
-    prevTime = evtEnd;
+    segments.push({ start: evt.start, end: evt.end, status: evt.status });
+    prevTime = evt.end;
     prevStatus = evt.status;
   });
 
@@ -221,7 +234,7 @@ function buildFullTimeline(
               top: y1,
               left: x,
               width: 1,
-              height: y2 - y1,
+              height: Math.abs(y2 - y1),
             },
           ]}
         />,
