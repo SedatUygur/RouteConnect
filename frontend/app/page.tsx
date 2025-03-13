@@ -100,7 +100,11 @@ export default function Home() {
       <h2 className="mb-4 text-center text-xl font-bold">Create a New Trip</h2>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <p>
+            Required fields are marked <span className="requiredLabel"></span>
+          </p>
+          <br></br>
+          <label className="requiredLabel block text-sm font-medium text-gray-700">
             Current Location:
           </label>
           <input
@@ -115,7 +119,7 @@ export default function Home() {
           {errors.current_location && <div>{errors.current_location}</div>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="requiredLabel block text-sm font-medium text-gray-700">
             Pickup Location:
           </label>
           <input
@@ -130,7 +134,7 @@ export default function Home() {
           {errors.pickup_location && <div>{errors.pickup_location}</div>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="requiredLabel block text-sm font-medium text-gray-700">
             Drop-off Location:
           </label>
           <input
@@ -145,7 +149,7 @@ export default function Home() {
           {errors.dropoff_location && <div>{errors.dropoff_location}</div>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="requiredLabel block text-sm font-medium text-gray-700">
             Current Cycle Hours Used:
           </label>
           <input

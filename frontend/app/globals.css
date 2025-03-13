@@ -19,3 +19,8 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.requiredLabel:after {
+  content: ' *';
+  color: red;
+}
